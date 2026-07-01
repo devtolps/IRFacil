@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IR Fácil · Organizador de Imposto de Renda</title>
+<!-- ═══════════════════════════════════════════════════════
+     Sem dependências externas — funciona 100% offline /
+     file:// sem avisos de console ou bloqueios de segurança.
+═══════════════════════════════════════════════════════ -->
+<style>
+/* ─────────────────────────────────────────────
+   RESET MÍNIMO — só o necessário, sem brutalizar
+───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f1f5f9; color: #1e293b; line-height: 1.5; }
+
+/* Normaliza button sem destruir aparência */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  line-height: inherit;
+  color: inherit;
+}
+button:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+/* ─────────────────────────────────────────────
+   LAYOUT
+───────────────────────────────────────────── */
+.flex          { display: flex; }
+.flex-col      { flex-direction: column; }
+.flex-1        { flex: 1 1 0%; }
+.flex-wrap     { flex-wrap: wrap; }
+.grid          { display: grid; }
+.grid-cols-1   { grid-template-columns: repeat(1, minmax(0,1fr)); }
+.grid-cols-2   { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.hidden        { display: none !important; }
+.min-h-screen  { min-height: 100vh; }
+.min-w-0       { min-width: 0; }
+.overflow-y-auto { overflow-y: auto; }
+.outline-none  { outline: none; }
+.relative      { position: relative; }
+.absolute      { position: absolute; }
+.sticky        { position: sticky; }
+.top-0         { top: 0; }
+.top-1\/2      { top: 50%; }
+.left-2\.5     { left: .625rem; }
+.-translate-y-1\/2 { transform: translateY(-50%); }
+.truncate      { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.italic        { font-style: italic; }
+.uppercase     { text-transform: uppercase; }
+.pointer-events-none { pointer-events: none; }
+.cursor-pointer { cursor: pointer; }
+.shrink-0      { flex-shrink: 0; }
+
+/* ─────────────────────────────────────────────
+   TRANSITIONS
+───────────────────────────────────────────── */
+.transition           { transition: background .15s ease, color .15s ease, border-color .15s ease, opacity .15s ease; }
+.transition-transform { transition: transform .2s ease; }
+
+/* ─────────────────────────────────────────────
+   SPACING — MARGIN
+───────────────────────────────────────────── */
+.mt-0\.5 { margin-top: .125rem; } .mt-1 { margin-top: .25rem; }
+.mt-2    { margin-top: .5rem; }   .mt-4 { margin-top: 1rem; }
+.mt-6    { margin-top: 1.5rem; }
+.mb-1    { margin-bottom: .25rem; } .mb-2 { margin-bottom: .5rem; }
+.mb-3    { margin-bottom: .75rem; } .mb-4 { margin-bottom: 1rem; }
+.mb-5    { margin-bottom: 1.25rem; }.mb-8 { margin-bottom: 2rem; }
+.ml-1    { margin-left: .25rem; }   .mr-1 { margin-right: .25rem; }
+.mr-auto { margin-right: auto; }    .mx-auto { margin: 0 auto; }
+
+/* ─────────────────────────────────────────────
+   SPACING — PADDING
+───────────────────────────────────────────── */
+.p-1   { padding: .25rem; }   .p-3   { padding: .75rem; }
+.p-3\.5{ padding: .875rem; }  .p-4   { padding: 1rem; }
+.p-5   { padding: 1.25rem; }
+.pt-1  { padding-top: .25rem; }   .pt-2  { padding-top: .5rem; }
+.px-0\.5 { padding-left: .125rem; padding-right: .125rem; }
+.px-1  { padding-left: .25rem;  padding-right: .25rem; }
+.px-1\.5{padding-left: .375rem; padding-right: .375rem;}
+.px-2  { padding-left: .5rem;   padding-right: .5rem; }
+.px-3  { padding-left: .75rem;  padding-right: .75rem; }
+.px-4  { padding-left: 1rem;    padding-right: 1rem; }
+.px-5  { padding-left: 1.25rem; padding-right: 1.25rem; }
+.px-6  { padding-left: 1.5rem;  padding-right: 1.5rem; }
+.px-8  { padding-left: 2rem;    padding-right: 2rem; }
+.py-1  { padding-top: .25rem;   padding-bottom: .25rem; }
+.py-1\.5{padding-top: .375rem;  padding-bottom: .375rem;}
+.py-2  { padding-top: .5rem;    padding-bottom: .5rem; }
+.py-2\.5{padding-top: .625rem;  padding-bottom: .625rem;}
+.py-3  { padding-top: .75rem;   padding-bottom: .75rem; }
+.py-3\.5{padding-top: .875rem;  padding-bottom: .875rem;}
+.py-14 { padding-top: 3.5rem;   padding-bottom: 3.5rem; }
+.py-16 { padding-top: 4rem;     padding-bottom: 4rem; }
+.pl-8  { padding-left: 2rem; }  .pr-3  { padding-right: .75rem; }
+
+/* ─────────────────────────────────────────────
+   GAP & SPACE-Y
+───────────────────────────────────────────── */
+.gap-1   { gap: .25rem; }  .gap-1\.5 { gap: .375rem; }
+.gap-2   { gap: .5rem; }   .gap-2\.5  { gap: .625rem; }
+.gap-3   { gap: .75rem; }  .gap-4    { gap: 1rem; }
+.space-y-1   > * + * { margin-top: .25rem; }
+.space-y-1\.5> * + * { margin-top: .375rem; }
+.space-y-2   > * + * { margin-top: .5rem; }
+.space-y-3   > * + * { margin-top: .75rem; }
+.space-y-4   > * + * { margin-top: 1rem; }
+.space-y-5   > * + * { margin-top: 1.25rem; }
+
+/* ─────────────────────────────────────────────
+   SIZING
+───────────────────────────────────────────── */
+.w-3  { width: .75rem; }  .w-3\.5{ width: .875rem; }
+.w-4  { width: 1rem; }    .w-5   { width: 1.25rem; }
+.w-7  { width: 1.75rem; } .w-8   { width: 2rem; }
+.w-9  { width: 2.25rem; } .w-10  { width: 2.5rem; }
+.w-16 { width: 4rem; }    .w-full{ width: 100%; }
+.h-3  { height: .75rem; } .h-3\.5{ height: .875rem; }
+.h-4  { height: 1rem; }   .h-5   { height: 1.25rem; }
+.h-7  { height: 1.75rem; }.h-8   { height: 2rem; }
+.h-9  { height: 2.25rem; }.h-10  { height: 2.5rem; }
+.h-16 { height: 4rem; }   .h-full{ height: 100%; }
+.max-w-sm  { max-width: 24rem; }
+.max-w-4xl { max-width: 56rem; }
+
+/* ─────────────────────────────────────────────
+   ALIGNMENT
+───────────────────────────────────────────── */
+.items-center   { align-items: center; }
+.items-start    { align-items: flex-start; }
+.justify-center { justify-content: center; }
+.justify-between{ justify-content: space-between; }
+.justify-end    { justify-content: flex-end; }
+.text-center    { text-align: center; }
+.text-left      { text-align: left; }
+
+/* ─────────────────────────────────────────────
+   BORDER
+───────────────────────────────────────────── */
+.border      { border: 1.5px solid #e2e8f0; }
+.border-b    { border-bottom: 1px solid #e2e8f0; }
+.border-t    { border-top: 1px solid #e2e8f0; }
+.border-r    { border-right: 1px solid #e2e8f0; }
+.border-l-4  { border-left: 4px solid; }
+.border-slate-100 { border-color: #f1f5f9; }
+.border-slate-200 { border-color: #e2e8f0; }
+.border-slate-300 { border-color: #cbd5e1; }
+.border-blue-200  { border-color: #bfdbfe; }
+.border-blue-300  { border-color: #93c5fd; }
+.border-blue-600  { border-color: #2563eb; }
+.border-green-200 { border-color: #bbf7d0; }
+.border-green-300 { border-color: #86efac; }
+.border-amber-400 { border-color: #fbbf24; }
+.rounded      { border-radius: .25rem; }
+.rounded-lg   { border-radius: .5rem; }
+.rounded-xl   { border-radius: .75rem; }
+.rounded-2xl  { border-radius: 1rem; }
+.rounded-full { border-radius: 9999px; }
+
+/* ─────────────────────────────────────────────
+   BACKGROUND
+───────────────────────────────────────────── */
+.bg-white     { background: #fff; }
+.bg-slate-50  { background: #f8fafc; }
+.bg-slate-100 { background: #f1f5f9; }
+.bg-slate-200 { background: #e2e8f0; }
+.bg-blue-50   { background: #eff6ff; }
+.bg-blue-600  { background: #2563eb; }
+.bg-green-50  { background: #f0fdf4; }
+.bg-green-600 { background: #16a34a; }
+.bg-red-50    { background: #fef2f2; }
+.bg-red-600   { background: #dc2626; }
+.bg-amber-50  { background: #fffbeb; }
+.bg-yellow-200{ background: #fef08a; }
+.bg-white\/20 { background: rgba(255,255,255,.2); }
+
+/* Hover */
+.hover\:bg-slate-50:hover  { background: #f8fafc; }
+.hover\:bg-slate-100:hover { background: #f1f5f9; }
+.hover\:bg-slate-300:hover { background: #cbd5e1; }
+.hover\:bg-blue-50:hover   { background: #eff6ff; }
+.hover\:bg-blue-100:hover  { background: #dbeafe; }
+.hover\:bg-blue-700:hover  { background: #1d4ed8; }
+.hover\:bg-green-700:hover { background: #15803d; }
+.hover\:bg-red-50:hover    { background: #fef2f2; }
+.hover\:bg-red-100:hover   { background: #fee2e2; }
+.hover\:bg-red-700:hover   { background: #b91c1c; }
+.hover\:border-slate-300:hover { border-color: #cbd5e1; }
+.hover\:border-blue-300:hover  { border-color: #93c5fd; }
+
+/* Focus */
+.focus\:bg-white:focus       { background: #fff; }
+.focus\:border-blue-400:focus{ border-color: #60a5fa; }
+.placeholder\:text-slate-400::placeholder { color: #94a3b8; }
+
+/* ─────────────────────────────────────────────
+   TEXT COLOR
+───────────────────────────────────────────── */
+.text-white    { color: #fff; }
+.text-slate-300{ color: #cbd5e1; }.text-slate-400{ color: #94a3b8; }
+.text-slate-500{ color: #64748b; }.text-slate-600{ color: #475569; }
+.text-slate-700{ color: #334155; }.text-slate-800{ color: #1e293b; }
+.text-blue-500 { color: #3b82f6; }.text-blue-600 { color: #2563eb; }
+.text-blue-700 { color: #1d4ed8; }.text-blue-800 { color: #1e40af; }
+.text-green-500{ color: #22c55e; }.text-green-600{ color: #16a34a; }
+.text-green-700{ color: #15803d; }.text-green-800{ color: #166534; }
+.text-red-400  { color: #f87171; }.text-red-500  { color: #ef4444; }
+.text-red-600  { color: #dc2626; }
+.text-amber-600{ color: #d97706; }.text-amber-700{ color: #b45309; }
+.text-amber-800{ color: #92400e; }
+
+/* Hover text */
+.hover\:text-slate-600:hover { color: #475569; }
+.hover\:text-slate-700:hover { color: #334155; }
+.hover\:text-blue-600:hover  { color: #2563eb; }
+.hover\:text-red-500:hover   { color: #ef4444; }
+.hover\:text-red-600:hover   { color: #dc2626; }
+
+/* ─────────────────────────────────────────────
+   TYPOGRAPHY
+───────────────────────────────────────────── */
+.text-xs   { font-size: .75rem;   line-height: 1rem; }
+.text-sm   { font-size: .875rem;  line-height: 1.25rem; }
+.text-base { font-size: 1rem;     line-height: 1.5rem; }
+.text-lg   { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl   { font-size: 1.25rem;  line-height: 1.75rem; }
+.text-2xl  { font-size: 1.5rem;   line-height: 2rem; }
+.text-3xl  { font-size: 1.875rem; line-height: 2.25rem; }
+.font-medium   { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold     { font-weight: 700; }
+.font-extrabold{ font-weight: 800; }
+.leading-tight  { line-height: 1.25; }
+.leading-relaxed{ line-height: 1.625; }
+.tracking-tight { letter-spacing: -.025em; }
+.tracking-wider { letter-spacing: .05em; }
+
+/* ─────────────────────────────────────────────
+   SHADOW
+───────────────────────────────────────────── */
+.shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.shadow-md { box-shadow: 0 2px 8px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04); }
+
+/* ─────────────────────────────────────────────
+   Z-INDEX
+───────────────────────────────────────────── */
+.z-10 { z-index: 10; } .z-40 { z-index: 40; }
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
+@media (min-width: 640px) {
+  .sm\:col-span-2  { grid-column: span 2 / span 2; }
+  .sm\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .sm\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .sm\:inline      { display: inline; }
+}
+@media (min-width: 768px) {
+  .md\:hidden { display: none !important; }
+  .md\:p-6    { padding: 1.5rem; }
+}
+
+/* ═══════════════════════════════════════════════
+   COMPONENTES — design leve e refinado
+═══════════════════════════════════════════════ */
+
+/* ── Sidebar ── */
+#sidebar {
+  width: 264px; min-width: 264px;
+  background: #fff;
+  border-right: 1px solid #f1f5f9;
+  display: flex; flex-direction: column;
+  box-shadow: 1px 0 0 #f1f5f9;
+  transition: width .25s ease;
+}
+#sidebar.collapsed { width: 0; min-width: 0; overflow: hidden; }
+#sidebar-backdrop  { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 190; }
+#sidebar-backdrop.visible { display: block; }
+
+@media (max-width: 767px) {
+  #sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 200; transform: translateX(-110%); transition: transform .25s ease; }
+  #sidebar.mobile-open { transform: translateX(0); }
+  #main-content { margin-left: 0 !important; }
+}
+
+/* ── Cards ── */
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 1px 12px rgba(0,0,0,.04);
+  padding: 22px;
+  border: 1px solid rgba(0,0,0,.04);
+}
+
+/* ── Fields ── */
+.field {
+  display: block; width: 100%;
+  padding: 9px 13px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 9px;
+  font-size: .875rem;
+  background: #f8fafc;
+  color: #1e293b;
+  outline: none;
+  transition: border-color .18s, background .18s;
+}
+.field:focus  { border-color: #2563eb; background: #fff; }
+.field::placeholder { color: #94a3b8; }
+
+.lbl {
+  display: block;
+  font-size: .7rem; font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 5px;
+}
+
+/* ── Step pills ── */
+.step-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: .8rem; font-weight: 600;
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+  transition: background .18s, color .18s, border-color .18s;
+}
+.step-pill.active   { background: #2563eb; color: #fff; border-color: #2563eb; }
+.step-pill.done     { background: #dcfce7; color: #166534; border-color: #86efac; }
+.step-pill.inactive { background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+.step-pill.inactive:hover { background: #e8f0fe; color: #2563eb; border-color: #bfdbfe; }
+
+/* ── Badges ── */
+.badge        { display: inline-block; border-radius: 9999px; padding: 2px 10px; font-size: .73rem; font-weight: 700; }
+.badge-green  { background: #dcfce7; color: #166534; }
+.badge-red    { background: #fee2e2; color: #991b1b; }
+.badge-blue   { background: #dbeafe; color: #1e40af; }
+.badge-yellow { background: #fef9c3; color: #854d0e; }
+.badge-gray   { background: #f1f5f9; color: #475569; }
+
+/* ── Buttons — classe base implícita via normalização ── */
+
+/* Botão primário azul */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 20px;
+  background: #2563eb; color: #fff;
+  font-weight: 600; font-size: .875rem;
+  border-radius: 10px;
+  border: none;
+  transition: background .18s, box-shadow .18s;
+  box-shadow: 0 1px 3px rgba(37,99,235,.25);
+}
+.btn-primary:hover { background: #1d4ed8; box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+
+/* Botão ghost/outline */
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 18px;
+  background: transparent; color: #475569;
+  font-weight: 600; font-size: .875rem;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  transition: background .18s, border-color .18s, color .18s;
+}
+.btn-ghost:hover { background: #f8fafc; border-color: #cbd5e1; color: #334155; }
+
+/* ── Sidebar utility buttons ── */
+.sidebar-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: .78rem; font-weight: 600;
+  color: #64748b; background: transparent;
+  transition: background .15s, color .15s;
+  text-align: left;
+}
+.sidebar-btn:hover { background: #f1f5f9; color: #1e293b; }
+.sidebar-btn.danger { color: #dc2626; }
+.sidebar-btn.danger:hover { background: #fef2f2; }
+
+/* ── Item rows ── */
+.item-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 13px;
+  border-radius: 11px;
+  border: 1.5px solid #f1f5f9;
+  background: #fafbfc;
+  transition: border-color .15s, background .15s;
+}
+.item-row:hover { border-color: #bfdbfe; background: #fafeff; }
+
+/* ── Client rows ── */
+.client-row {
+  padding: 9px 10px; border-radius: 9px;
+  cursor: pointer; border: 1.5px solid transparent;
+  transition: background .13s, border-color .13s;
+}
+.client-row:hover       { background: #eff6ff; border-color: #bfdbfe; }
+.client-row.active-client { background: #dbeafe; border-color: #93c5fd; }
+
+/* ── Compare cards ── */
+.cmp-card { border-radius: 13px; padding: 20px; border: 2px solid transparent; transition: border-color .2s; }
+.cmp-card.winner { border-color: #16a34a; }
+
+/* ── Tip text ── */
+.tip { font-size: .71rem; color: #94a3b8; margin-top: 3px; display: block; line-height: 1.4; }
+
+/* ── Progress bar ── */
+.prog { height: 5px; border-radius: 9999px; background: #e2e8f0; overflow: hidden; }
+.prog > * { height: 100%; border-radius: 9999px; }
+
+/* ── Toast ── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(70px);
+  background: #1e293b; color: #fff;
+  padding: 9px 20px; border-radius: 9999px;
+  font-size: .82rem; font-weight: 500;
+  opacity: 0; pointer-events: none;
+  transition: transform .25s ease, opacity .25s ease;
+  z-index: 9999;
+}
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* ── Modals ── */
+.modal-bg {
+  position: fixed; inset: 0;
+  background: rgba(15,23,42,.45);
+  display: none; align-items: center; justify-content: center;
+  z-index: 500;
+}
+.modal-bg.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 16px;
+  padding: 26px; width: min(500px, 95vw);
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 8px 40px rgba(0,0,0,.12);
+}
+
+/* ── PGD export button ── */
+.btn-pgd {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: #1d4ed8; color: #fff;
+  font-weight: 700; font-size: .85rem;
+  border-radius: 11px; border: none;
+  box-shadow: 0 1px 4px rgba(29,78,216,.2);
+  transition: background .18s, box-shadow .18s;
+}
+.btn-pgd:hover { background: #1e40af; box-shadow: 0 3px 10px rgba(29,78,216,.28); }
+
+/* ── Doc tab buttons ── */
+.doc-tab-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  font-size: .8rem; font-weight: 600;
+  border-radius: 9px; border: 1.5px solid #e2e8f0;
+  background: #fff; color: #64748b;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.doc-tab-btn:hover  { border-color: #93c5fd; color: #2563eb; background: #eff6ff; }
+.doc-tab-btn.active { background: #2563eb; color: #fff; border-color: #2563eb; }
+
+/* ── Icon buttons (lápis, lixeira, etc.) ── */
+.icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  border-radius: 8px; border: none; background: transparent;
+  color: #94a3b8;
+  transition: background .15s, color .15s;
+}
+.icon-btn:hover        { background: #f1f5f9; color: #475569; }
+.icon-btn.edit:hover   { background: #eff6ff; color: #2563eb; }
+.icon-btn.delete:hover { background: #fef2f2; color: #ef4444; }
+.icon-btn.danger-active{ background: #dc2626; color: #fff; width: auto; padding: 0 10px; gap: 4px; font-size: .75rem; font-weight: 700; }
+.icon-btn.cancel-active{ background: #f1f5f9; color: #475569; }
+
+/* ── Animations ── */
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeSlide .2s ease forwards; }
+
+/* ── Storage warning banner ── */
+#storage-warning {
+  display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
+  background: #fef9c3; border-bottom: 1px solid #fcd34d;
+  padding: 9px 20px; gap: 12px; align-items: center; flex-wrap: wrap;
+  font-size: .78rem; color: #92400e; font-weight: 500;
+}
+#storage-warning a { color: #1d4ed8; font-weight: 700; text-decoration: underline; }
+#storage-warning button {
+  margin-left: auto; background: #92400e; color: #fff;
+  border: none; border-radius: 7px; padding: 3px 11px;
+  font-size: .75rem; font-weight: 700; cursor: pointer;
+}
+
+/* ── Print ── */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area {
+    position: absolute; top: 0; left: 0; width: 100%;
+    padding: 30px; white-space: pre-wrap;
+    font-family: 'Courier New', monospace; font-size: 11pt; line-height: 1.6; color: #000;
+  }
+}
+#print-area { display: none; }
+</style>
+</head>
+<body class="min-h-screen text-slate-800">
+
+<!-- ══ AVISO: storage em memória (file://) ══ -->
+<div id="storage-warning">
+  <span>⚠️ <strong>Modo offline detectado</strong> — seus dados estão salvos apenas nesta aba.
+  Para salvar permanentemente, abra o arquivo via servidor local
+  (<a href="https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer" target="_blank">VS Code Live Server</a>)
+  ou use o botão <strong>"Exportar Backup (JSON)"</strong> antes de fechar.</span>
+  <button onclick="document.getElementById('storage-warning').style.display='none'">✕ Fechar</button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SIDEBAR BACKDROP (mobile)
+══════════════════════════════════════════════ -->
+<div id="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+<!-- ══════════════════════════════════════════════
+     LAYOUT WRAPPER
+══════════════════════════════════════════════ -->
+<div class="flex min-h-screen">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside id="sidebar" class="bg-white border-r border-slate-100 flex flex-col shadow-md z-10">
+  <!-- Logo -->
+  <div class="p-5 border-b border-slate-100 flex items-center gap-2.5">
+    <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+      <i data-lucide="file-text" class="w-4 h-4 text-white"></i>
+    </div>
+    <span class="font-extrabold text-slate-800 text-base tracking-tight">IR <span class="text-blue-600">Fácil</span></span>
+  </div>
+
+  <!-- New declaration button -->
+  <div class="p-3 border-b border-slate-100">
+    <button onclick="newDeclaration()"
+      class="btn-primary w-full justify-center">
+      <i data-lucide="plus-circle" class="w-4 h-4"></i> Nova Declaração
+    </button>
+  </div>
+
+  <!-- Client list -->
+  <div class="flex-1 overflow-y-auto flex flex-col p-3 gap-2">
+
+    <!-- Search field -->
+    <div class="relative">
+      <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></i>
+      <input
+        id="client-search"
+        type="text"
+        placeholder="Pesquisar por Nome ou CPF..."
+        oninput="renderClientList()"
+        class="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 outline-none focus:border-blue-400 focus:bg-white transition placeholder:text-slate-400"
+      />
+    </div>
+
+    <!-- Header row -->
+    <div class="flex items-center justify-between px-1">
+      <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Declarações salvas</p>
+      <span id="client-count" class="text-[10px] font-bold text-slate-400"></span>
+    </div>
+
+    <!-- List rendered by JS -->
+    <div id="client-list" class="space-y-1 flex-1">
+      <p class="text-xs text-slate-400 px-2 py-3">Nenhuma declaração ainda.</p>
+    </div>
+  </div>
+
+  <!-- Utilities -->
+  <div class="p-3 border-t border-slate-100 space-y-1.5">
+    <button onclick="exportJSON()"
+      class="sidebar-btn">
+      <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar Backup (JSON)
+    </button>
+    <label class="sidebar-btn cursor-pointer">
+      <i data-lucide="upload" class="w-3.5 h-3.5"></i> Importar Backup
+      <input type="file" accept=".json" onchange="importJSON(event)" class="hidden"/>
+    </label>
+    <button onclick="confirmClear()"
+      class="sidebar-btn danger">
+      <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Limpar Todos os Dados
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN CONTENT ═══════════ -->
+<div id="main-content" class="flex-1 flex flex-col min-w-0">
+
+  <!-- TOP NAV -->
+  <header class="bg-white border-b border-slate-100 sticky top-0 z-40 shadow-sm">
+    <div class="px-4 py-3 flex items-center gap-3 flex-wrap">
+      <!-- Mobile menu toggle -->
+      <button onclick="toggleSidebar()" class="md:hidden text-slate-500 hover:text-blue-600 transition">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+
+      <!-- Current client badge -->
+      <div id="active-client-badge" class="flex items-center gap-2 text-sm text-slate-500 mr-auto">
+        <i data-lucide="user-circle" class="w-4 h-4"></i>
+        <span id="active-client-name" class="font-medium">Nenhuma declaração selecionada</span>
+      </div>
+
+      <!-- Step pills -->
+      <nav class="flex gap-1.5 flex-wrap" id="step-nav">
+        <button onclick="goStep(1)" id="pill-1" class="step-pill inactive">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i> Contribuinte
+        </button>
+        <button onclick="goStep(2)" id="pill-2" class="step-pill inactive">
+          <i data-lucide="list" class="w-3.5 h-3.5"></i> Lançamentos
+        </button>
+        <button onclick="goStep(3)" id="pill-3" class="step-pill inactive">
+          <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i> Resumo
+        </button>
+        <button onclick="goStep(4)" id="pill-4" class="step-pill inactive">
+          <i data-lucide="file-signature" class="w-3.5 h-3.5"></i> Documentos
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- CONTENT AREA -->
+  <main class="flex-1 p-4 md:p-6 max-w-4xl mx-auto w-full space-y-5">
+
+    <!-- ─── WELCOME SCREEN ─── -->
+    <section id="step-0" class="fade-in">
+      <div class="card flex flex-col items-center py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center mb-5">
+          <i data-lucide="file-text" class="w-8 h-8 text-white"></i>
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-800 mb-2">IR <span class="text-blue-600">Fácil</span></h1>
+        <p class="text-slate-500 max-w-sm mb-8 text-sm leading-relaxed">
+          Organize sua declaração de Imposto de Renda sem complicação. Seus dados ficam salvos <em>somente no seu computador</em> — 100% privado e gratuito.
+        </p>
+        <button onclick="newDeclaration()"
+          class="btn-primary">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i> Começar nova declaração
+        </button>
+        <p class="text-slate-400 text-xs mt-6">ou selecione uma declaração já salva na barra lateral</p>
+      </div>
+    </section>
+
+    <!-- ─── STEP 1: CONTRIBUINTE ─── -->
+    <section id="step-1" class="hidden space-y-4">
+
+      <div class="card">
+        <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+          <i data-lucide="user" class="w-4 h-4 text-blue-600"></i> Dados do Contribuinte
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="lbl">Nome completo</label>
+            <input id="f-nome" class="field" type="text" placeholder="Ex: João da Silva" oninput="autoSave()"/>
+          </div>
+          <div>
+            <label class="lbl">CPF</label>
+            <input id="f-cpf" class="field" type="text" placeholder="000.000.000-00"
+              oninput="maskCPF(this);autoSave()" maxlength="14"/>
+            <span class="tip">O CPF é a chave que identifica cada declaração salva.</span>
+          </div>
+          <div>
+            <label class="lbl">Data de nascimento</label>
+            <input id="f-nasc" class="field" type="date" oninput="autoSave()"/>
+          </div>
+          <div>
+            <label class="lbl">Ano-calendário da declaração</label>
+            <select id="f-ano" class="field" onchange="autoSave()">
+              <option value="2025">2025 (renda de 2024)</option>
+              <option value="2024">2024 (renda de 2023)</option>
+              <option value="2023">2023 (renda de 2022)</option>
+            </select>
+          </div>
+          <div class="sm:col-span-2">
+            <label class="lbl">Tipo de trabalho / Fonte de renda principal</label>
+            <select id="f-trabalho" class="field" onchange="autoSave();checkObrig()">
+              <option value="">Selecione...</option>
+              <option value="clt">Empregado com carteira assinada (CLT)</option>
+              <option value="pj">Autônomo / Pessoa Jurídica (PJ)</option>
+              <option value="serv_pub">Servidor Público</option>
+              <option value="aposent">Aposentado ou Pensionista</option>
+              <option value="empresario">Empresário / Sócio de empresa</option>
+              <option value="rural">Produtor Rural</option>
+              <option value="desempregado">Desempregado / Sem renda formal</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="obrig-box" class="mt-4 rounded-xl p-3.5 bg-slate-50 border border-slate-200 text-sm text-slate-500">
+          Preencha CPF, tipo de trabalho e adicione seus rendimentos na <strong>Etapa 2</strong> para verificar a obrigatoriedade.
+        </div>
+      </div>
+
+      <!-- Dependentes -->
+      <div class="card">
+        <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+          <i data-lucide="users" class="w-4 h-4 text-blue-600"></i> Dependentes
+          <span class="tip ml-1" style="text-transform:none;font-size:.75rem;color:#94a3b8;">Cada dependente deduz R$ 2.275,08/ano na declaração completa</span>
+        </h2>
+        <div id="dep-list" class="space-y-2 mb-3"></div>
+        <button onclick="openDepModal()"
+          class="btn-ghost text-blue-600 border-blue-100 hover\:bg-blue-50">
+          <i data-lucide="plus" class="w-4 h-4"></i> Adicionar dependente
+        </button>
+      </div>
+
+      <div class="flex justify-end">
+        <button onclick="goStep(2)"
+          class="btn-primary">
+          Próxima etapa <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ─── STEP 2: LANÇAMENTOS ─── -->
+    <section id="step-2" class="hidden space-y-4">
+
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-slate-800">Lançamentos</h1>
+          <p class="text-slate-500 text-sm">Salvo automaticamente no seu navegador.</p>
+        </div>
+        <button onclick="openItemModal(null)"
+          class="btn-primary">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i> Novo lançamento
+        </button>
+      </div>
+
+      <!-- ═══ LANÇAMENTO TURBO COM IA ═══ -->
+      <div class="card" style="background:linear-gradient(135deg,#eff6ff,#f5f3ff);border:1.5px solid #dbeafe;">
+        <button onclick="toggleTurbo()" class="w-full flex items-center justify-between gap-3 cursor-pointer">
+          <h2 class="font-bold text-slate-800 flex items-center gap-2 text-base">
+            <span class="text-xl">⚡</span> Lançamento Turbo com IA Gratuita
+          </h2>
+          <i data-lucide="chevron-down" id="turbo-chevron" class="w-5 h-5 text-slate-400 transition-transform"></i>
+        </button>
+        <p class="text-slate-500 text-xs mt-1">Tire uma foto do recibo, peça para uma IA (ChatGPT, Gemini, etc.) ler e cole o resultado aqui — sem digitar nada.</p>
+
+        <div id="turbo-body" class="hidden mt-4 space-y-4">
+          <!-- Passo 1 -->
+          <div class="bg-white rounded-xl p-4 border border-slate-200">
+            <p class="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">1</span>
+              Copie o comando e cole numa IA de imagem (junto com a foto do recibo)
+            </p>
+            <button onclick="copyTurboPrompt()"
+              class="btn-ghost text-blue-600 border-blue-100">
+              <i data-lucide="copy" class="w-4 h-4"></i> Copiar Comando
+            </button>
+          </div>
+
+          <!-- Passo 2 -->
+          <div class="bg-white rounded-xl p-4 border border-slate-200">
+            <p class="text-sm font-semibold text-slate-700 mb-2 flex items-center gap-2">
+              <span class="w-5 h-5 rounded-full bg-blue-600 text-white text-[11px] font-bold flex items-center justify-center shrink-0">2</span>
+              Cole a resposta da IA aqui
+            </p>
+            <textarea id="turbo-input" rows="2" class="field" placeholder="Ex: Saúde | Clínica Odonto Riso LTDA | 12.345.678/0001-99 | 450,00"></textarea>
+            <span class="tip">Formato esperado: Categoria | Nome do Emissor | CPF/CNPJ | Valor</span>
+          </div>
+
+          <!-- Passo 3 -->
+          <button onclick="processTurbo()"
+            class="btn-primary w-full justify-center" style="background:#16a34a" onmouseover="this.style.background='#15803d'" onmouseout="this.style.background='#16a34a'">
+            <i data-lucide="zap" class="w-4 h-4"></i> Processar e Lançar
+          </button>
+          <div id="turbo-feedback" class="hidden text-sm rounded-lg p-3"></div>
+        </div>
+      </div>
+
+      <!-- Summary bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="card p-3.5">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Entradas totais</p>
+          <p id="sb-entrada" class="font-extrabold text-green-600 text-base">R$ 0,00</p>
+        </div>
+        <div class="card p-3.5">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Deduções válidas</p>
+          <p id="sb-saida" class="font-extrabold text-red-500 text-base">R$ 0,00</p>
+          <span class="tip">Aluguel pago não é dedutível</span>
+        </div>
+        <div class="card p-3.5">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Aluguel pago</p>
+          <p id="sb-aluguel" class="font-extrabold text-amber-600 text-base">R$ 0,00</p>
+          <span class="tip">Obrigatório declarar, não deduz</span>
+        </div>
+        <div class="card p-3.5">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lançamentos</p>
+          <p id="sb-count" class="font-extrabold text-blue-600 text-base">0</p>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div id="cat-tabs" class="flex gap-1.5 flex-wrap"></div>
+
+      <!-- List -->
+      <div id="items-list" class="space-y-2"></div>
+      <div id="items-empty" class="hidden card py-14 text-center">
+        <i data-lucide="inbox" class="w-10 h-10 text-slate-300 mx-auto mb-3"></i>
+        <p class="font-semibold text-slate-400">Nenhum lançamento ainda</p>
+        <p class="text-slate-400 text-sm mt-1">Clique em <strong>"Novo lançamento"</strong> para começar.</p>
+      </div>
+
+      <div class="flex justify-between pt-2">
+        <button onclick="goStep(1)" class="btn-ghost">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar
+        </button>
+        <button onclick="goStep(3)" class="btn-primary">
+          Ver resumo <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- ─── STEP 3: RESUMO ─── -->
+    <section id="step-3" class="hidden space-y-4">
+
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 class="text-xl font-bold text-slate-800">Resumo da Declaração</h1>
+          <p class="text-slate-500 text-sm">Estimativa baseada nas tabelas da Receita Federal 2024.</p>
+        </div>
+        <button class="btn-pgd" onclick="exportPGD()">
+          <i data-lucide="file-down" class="w-4 h-4"></i> Exportar para o PGD (.txt)
+        </button>
+      </div>
+
+      <!-- Alert box -->
+      <div id="alert-box" class="hidden card border-l-4 border-amber-400 bg-amber-50 p-4 rounded-xl space-y-1.5"></div>
+
+      <!-- Comparison cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="cmp-card bg-blue-50" id="card-simp">
+          <div class="flex items-center justify-center gap-2 text-blue-600 mb-2">
+            <i data-lucide="zap" class="w-5 h-5"></i>
+            <p class="font-bold text-blue-800">Desconto Simplificado</p>
+          </div>
+          <p class="text-blue-500 text-xs mb-4">20% da renda tributável (limite R$ 16.754,34/ano)</p>
+          <div class="space-y-2 text-left">
+            <div class="flex justify-between text-sm"><span class="text-blue-600">Renda tributável</span><span class="font-bold" id="simp-renda">R$ 0,00</span></div>
+            <div class="flex justify-between text-sm"><span class="text-blue-600">Desconto padrão (20%)</span><span class="font-bold text-green-700" id="simp-deducao">R$ 0,00</span></div>
+            <div class="flex justify-between text-sm"><span class="text-blue-600">Ded. por dependentes</span><span class="font-bold" id="simp-dep">R$ 0,00</span></div>
+            <div class="flex justify-between text-sm border-t border-blue-200 pt-2"><span class="text-blue-700 font-semibold">Base de cálculo</span><span class="font-bold" id="simp-base">R$ 0,00</span></div>
+            <div class="flex justify-between text-base border-t border-blue-300 pt-2"><span class="text-blue-800 font-bold">Imposto estimado</span><span class="font-extrabold text-blue-800" id="simp-imposto">R$ 0,00</span></div>
+          </div>
+        </div>
+
+        <div class="cmp-card bg-green-50" id="card-comp">
+          <div class="flex items-center justify-center gap-2 text-green-600 mb-2">
+            <i data-lucide="file-check" class="w-5 h-5"></i>
+            <p class="font-bold text-green-800">Declaração Completa</p>
+          </div>
+          <p class="text-green-500 text-xs mb-4">Usa todas as despesas dedutíveis que você lançou</p>
+          <div class="space-y-2 text-left">
+            <div class="flex justify-between text-sm"><span class="text-green-600">Renda tributável</span><span class="font-bold" id="comp-renda">R$ 0,00</span></div>
+            <div class="flex justify-between text-sm"><span class="text-green-600">Deduções reais</span><span class="font-bold text-green-700" id="comp-deducao">R$ 0,00</span></div>
+            <div class="flex justify-between text-sm"><span class="text-green-600">Ded. por dependentes</span><span class="font-bold" id="comp-dep">R$ 0,00</span></div>
+            <div class="flex justify-between text-sm border-t border-green-200 pt-2"><span class="text-green-700 font-semibold">Base de cálculo</span><span class="font-bold" id="comp-base">R$ 0,00</span></div>
+            <div class="flex justify-between text-base border-t border-green-300 pt-2"><span class="text-green-800 font-bold">Imposto estimado</span><span class="font-extrabold text-green-800" id="comp-imposto">R$ 0,00</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommendation -->
+      <div id="recommendation" class="card flex items-start gap-4"></div>
+
+      <!-- IRRF + resultado -->
+      <div class="card">
+        <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+          <i data-lucide="landmark" class="w-4 h-4 text-blue-600"></i> Imposto já retido (IRRF)
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="lbl">Total de IRRF retido no ano</label>
+            <input id="f-irrf" class="field" type="text" placeholder="R$ 0,00"
+              oninput="maskMoney(this);autoSave();calcResumo()"/>
+            <span class="tip">Consta no informe de rendimentos do seu empregador ou banco.</span>
+          </div>
+          <div class="bg-slate-50 rounded-xl p-4 flex flex-col justify-center">
+            <p class="text-xs text-slate-500 mb-1 font-medium">Resultado estimado (modelo <span id="melhor-modelo" class="font-bold text-slate-700">–</span>):</p>
+            <p id="resultado-final" class="text-2xl font-extrabold text-slate-800">–</p>
+            <p id="resultado-label" class="text-xs text-slate-400 mt-1">Informe o IRRF para calcular</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category breakdown -->
+      <div class="card">
+        <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2">
+          <i data-lucide="pie-chart" class="w-4 h-4 text-blue-600"></i> Detalhamento por categoria
+        </h2>
+        <div id="cat-breakdown" class="space-y-3"></div>
+      </div>
+
+      <div class="flex justify-between pt-1">
+        <button onclick="goStep(2)" class="btn-ghost">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i> Editar lançamentos
+        </button>
+        <button class="btn-pgd" onclick="exportPGD()">
+          <i data-lucide="file-down" class="w-4 h-4"></i> Exportar para o PGD (.txt)
+        </button>
+      </div>
+    </section>
+
+    <!-- ─── STEP 4: DOCUMENTOS E CONTRATOS ─── -->
+    <section id="step-4" class="hidden space-y-4">
+      <div>
+        <h1 class="text-xl font-bold text-slate-800">Documentos e Contratos</h1>
+        <p class="text-slate-500 text-sm">Modelos prontos, preenchidos automaticamente com os dados da declaração selecionada.</p>
+      </div>
+
+      <!-- Document type tabs -->
+      <div class="flex gap-1.5 flex-wrap" id="doc-tabs">
+        <button onclick="setDocType('contrato')" id="doctab-contrato" class="doc-tab-btn">
+          <i data-lucide="file-signature" class="w-3.5 h-3.5"></i> Contrato de Honorários
+        </button>
+        <button onclick="setDocType('recibo')" id="doctab-recibo" class="doc-tab-btn">
+          <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Recibo de Documentos
+        </button>
+        <button onclick="setDocType('responsabilidade')" id="doctab-responsabilidade" class="doc-tab-btn">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Declaração de Responsabilidade
+        </button>
+      </div>
+
+      <!-- Editable preview -->
+      <div class="card" id="doc-preview-card">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h2 class="font-bold text-slate-700 text-sm flex items-center gap-2">
+            <i data-lucide="eye" class="w-4 h-4 text-blue-600"></i> Pré-visualização (editável)
+          </h2>
+          <button onclick="printDocument()" class="btn-pgd" style="padding:9px 18px;">
+            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Documento
+          </button>
+        </div>
+        <textarea id="doc-textarea" class="field" style="min-height:420px;font-family:'Courier New',monospace;font-size:.82rem;line-height:1.6;white-space:pre-wrap;"></textarea>
+        <p class="tip mt-2">Você pode editar o texto livremente antes de imprimir — as alterações não são salvas automaticamente.</p>
+      </div>
+    </section>
+
+  </main>
+</div><!-- /main-content -->
+</div><!-- /flex wrapper -->
+
+<!-- Hidden print area, populated before window.print() -->
+<div id="print-area"></div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: NOVO LANÇAMENTO
+══════════════════════════════════════════════ -->
+<div id="item-modal" class="modal-bg" onclick="closeItemModalBg(event)">
+  <div class="modal-box">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-bold text-lg text-slate-800" id="item-modal-title">Novo lançamento</h2>
+      <button onclick="closeItemModal()" class="text-slate-400 hover:text-slate-600 transition p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="lbl">Categoria</label>
+        <select id="m-cat" class="field" onchange="updateSubcat();updateTip()"></select>
+        <span id="m-cat-tip" class="tip"></span>
+      </div>
+      <div>
+        <label class="lbl">Subcategoria</label>
+        <select id="m-sub" class="field"></select>
+      </div>
+      <div>
+        <label class="lbl">Descrição (opcional)</label>
+        <input id="m-desc" class="field" type="text" placeholder="Ex: Consulta Dr. João, Faculdade XYZ..."/>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="lbl">Valor (R$)</label>
+          <input id="m-val" class="field" type="text" placeholder="0,00" oninput="maskMoney(this)"/>
+        </div>
+        <div>
+          <label class="lbl">Mês</label>
+          <select id="m-mes" class="field">
+            <option value="">Todo o ano</option>
+            <option value="01">Janeiro</option><option value="02">Fevereiro</option>
+            <option value="03">Março</option><option value="04">Abril</option>
+            <option value="05">Maio</option><option value="06">Junho</option>
+            <option value="07">Julho</option><option value="08">Agosto</option>
+            <option value="09">Setembro</option><option value="10">Outubro</option>
+            <option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">CPF/CNPJ do pagador/prestador (opcional)</label>
+        <input id="m-pagador" class="field" type="text" placeholder="Opcional"/>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeItemModal()" class="btn-ghost flex-1 justify-center">Cancelar</button>
+      <button onclick="saveItem()" class="btn-primary flex-1 justify-center">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     MODAL: DEPENDENTE
+══════════════════════════════════════════════ -->
+<div id="dep-modal" class="modal-bg" onclick="closeDepModalBg(event)">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="flex items-center justify-between mb-5">
+      <h2 class="font-bold text-lg text-slate-800">Adicionar Dependente</h2>
+      <button onclick="closeDepModal()" class="text-slate-400 hover:text-slate-600 p-1"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="lbl">Nome</label>
+        <input id="dep-nome" class="field" type="text" placeholder="Ex: Maria da Silva"/>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="lbl">CPF (se tiver)</label>
+          <input id="dep-cpf" class="field" type="text" placeholder="000.000.000-00" oninput="maskCPF(this)" maxlength="14"/>
+        </div>
+        <div>
+          <label class="lbl">Data de nascimento</label>
+          <input id="dep-nasc" class="field" type="date"/>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">Relação</label>
+        <select id="dep-relacao" class="field">
+          <option value="filho">Filho(a)</option>
+          <option value="conjuge">Cônjuge / Companheiro(a)</option>
+          <option value="pai_mae">Pai ou Mãe</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeDepModal()" class="btn-ghost flex-1 justify-center">Cancelar</button>
+      <button onclick="saveDep()" class="btn-primary flex-1 justify-center">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════════════ -->
+<script>
+/* ============================================================
+   STORAGE WRAPPER — funciona em file://, http:// e https://
+   Tenta localStorage; se bloqueado (Chrome/Edge em file://)
+   usa Map em memória e exibe aviso amarelo para o usuário.
+============================================================ */
+const _store = (() => {
+  const mem = new Map();
+  let _lsOk = null;
+  function lsAvailable() {
+    if (_lsOk !== null) return _lsOk;
+    try {
+      localStorage.setItem("__irfacil_test__","1");
+      localStorage.removeItem("__irfacil_test__");
+      _lsOk = true;
+    } catch(e) {
+      _lsOk = false;
+      setTimeout(() => {
+        const el = document.getElementById("storage-warning");
+        if (el) el.style.display = "flex";
+      }, 600);
+    }
+    return _lsOk;
+  }
+  return {
+    setItem(k,v)    { if (lsAvailable()) { try { localStorage.setItem(k,v); return; } catch(e){} } mem.set(k,v); },
+    getItem(k)      { if (lsAvailable()) { try { return localStorage.getItem(k); } catch(e){} } return mem.has(k)?mem.get(k):null; },
+    removeItem(k)   { if (lsAvailable()) { try { localStorage.removeItem(k); return; } catch(e){} } mem.delete(k); }
+  };
+})();
+
+/* ============================================================
+   CATEGORIAS DE LANÇAMENTO
+   tipo: 'entrada' | 'deducao' | 'info' | 'aluguel_pago'
+   aluguel_pago → aparece na declaração mas NÃO é dedutível
+============================================================ */
+const CAT = {
+  "💰 Salários e Rendimentos": {
+    icon:"trending-up", tipo:"entrada",
+    tip:"Inclua tudo que você recebeu de pessoa jurídica ou INSS.",
+    subs:["Salário / Pró-labore","Aposentadoria / Pensão INSS","Rendimento de trabalho autônomo","13º Salário","Bônus / PLR","Outro rendimento tributável"]
+  },
+  "💹 Rendimentos Financeiros": {
+    icon:"bar-chart-2", tipo:"entrada",
+    tip:"Rendimentos de bancos e corretoras constam no informe anual.",
+    subs:["Rendimento de poupança","Rendimento de CDB/LCI/LCA","Dividendos e JCP","Ganho de capital (venda de ações)","Resgate de previdência privada","Aluguel recebido"]
+  },
+  "🏥 Saúde": {
+    icon:"heart-pulse", tipo:"deducao",
+    tip:"Guarde todos os recibos por 5 anos. Não há limite de valor para despesas médicas.",
+    subs:["Consulta médica / Psicólogo / Fisioterapeuta","Dentista","Internação hospitalar","Plano de saúde","Exames e procedimentos","Cirurgia","Outros gastos com saúde"]
+  },
+  "📚 Educação": {
+    icon:"graduation-cap", tipo:"deducao",
+    tip:"Limite de R$ 3.561,50 por pessoa (você + cada dependente). Cursos livres não deduzem.",
+    subs:["Escola / Colégio (ensino básico)","Faculdade / Pós-graduação","Curso técnico profissionalizante","Educação especial","Educação de dependente"]
+  },
+  "🏦 Previdência": {
+    icon:"shield", tipo:"deducao",
+    tip:"PGBL deduz até 12% da renda bruta. VGBL não é dedutível aqui.",
+    subs:["INSS descontado em folha","INSS contribuinte individual","Previdência privada PGBL","Fundo de pensão do servidor público"]
+  },
+  "👨‍👩‍👧 Dependentes": {
+    icon:"users", tipo:"deducao",
+    tip:"Pensão judicial não tem limite. Demais gastos com dependentes seguem limites próprios.",
+    subs:["Pensão alimentícia (determinada judicialmente)","Outros gastos com dependente"]
+  },
+  "🏠 Aluguel Pago": {
+    icon:"home", tipo:"aluguel_pago",
+    tip:"Obrigatório informar na declaração, mas aluguel residencial pago NÃO gera dedução de imposto.",
+    subs:["Aluguel residencial pago","Aluguel comercial pago"]
+  },
+  "🏢 Bens e Patrimônio": {
+    icon:"building-2", tipo:"info",
+    tip:"Declare bens com valor de aquisição. A Receita cruza esses dados com cartórios e Detran.",
+    subs:["Imóvel comprado","Imóvel vendido","Veículo comprado","Veículo vendido","Outros bens e direitos"]
+  },
+  "📋 Outras Deduções": {
+    icon:"clipboard-list", tipo:"deducao",
+    tip:"Doações a fundos da infância e do idoso podem gerar dedução direta do imposto (até 3% e 1% respectivamente).",
+    subs:["Doação a fundo da infância e adolescência (ECA)","Doação a fundo do idoso","Doação a partido político","Livro-caixa (autônomo)","Outras deduções legais"]
+  }
+};
+
+/* ============================================================
+   TABELA IRPF — Progressiva mensal 2024
+   Fonte: Receita Federal, IN RFB nº 2.178/2024
+============================================================ */
+const FAIXAS_IRPF = [
+  {ate:2259.20,   aliq:0,     ded:0},
+  {ate:2826.65,   aliq:.075,  ded:169.44},
+  {ate:3751.05,   aliq:.15,   ded:381.44},
+  {ate:4664.68,   aliq:.225,  ded:662.77},
+  {ate:Infinity,  aliq:.275,  ded:896.00},
+];
+
+const LIMIT_SIMP     = 16754.34;  // limite desconto simplificado 2024
+const SIMP_PCT       = 0.20;
+const DED_DEPENDENTE = 2275.08;   // por dependente/ano 2024
+const LIMITE_EDUC    = 3561.50;   // por pessoa 2024
+const LIMITE_PGBL    = 0.12;      // 12% da renda bruta
+
+/* ============================================================
+   ESTADO
+============================================================ */
+const LS_CLIENTS = "irfacil_clients_v2";
+const LS_ACTIVE  = "irfacil_active_cpf";
+
+let clients    = {};   // { cpf: {profile, dependentes, items} }
+let activeCPF  = null;
+let editingId  = null; // item being edited
+let activeFilter = "all";
+
+function activeClient() {
+  return activeCPF ? (clients[activeCPF] || null) : null;
+}
+
+/* ── Persistence ── */
+function persistClients() {
+  _store.setItem(LS_CLIENTS, JSON.stringify(clients));
+}
+function loadClients() {
+  try { clients = JSON.parse(_store.getItem(LS_CLIENTS) || "{}"); } catch(e){ clients={}; }
+}
+function persistActive() {
+  if (activeCPF) _store.setItem(LS_ACTIVE, activeCPF);
+  else _store.removeItem(LS_ACTIVE);
+}
+
+/* ── Auto-save on any field change ── */
+function autoSave() {
+  const cpf = document.getElementById("f-cpf").value.trim();
+  const nome = document.getElementById("f-nome").value.trim();
+
+  // If CPF changed we may need to rename the key
+  if (activeCPF && cpf && cpf !== activeCPF && clients[activeCPF]) {
+    const data = clients[activeCPF];
+    delete clients[activeCPF];
+    activeCPF = cpf;
+    clients[activeCPF] = data;
+    persistActive();
+  }
+
+  if (!cpf && !nome) return;
+
+  const key = cpf || ("__nokey_" + Date.now());
+  if (!activeCPF) { activeCPF = key; persistActive(); }
+
+  if (!clients[activeCPF]) {
+    clients[activeCPF] = {profile:{},dependentes:[],items:[]};
+  }
+
+  clients[activeCPF].profile = {
+    nome,
+    cpf,
+    nasc:     document.getElementById("f-nasc").value,
+    ano:      document.getElementById("f-ano").value,
+    trabalho: document.getElementById("f-trabalho").value,
+    irrf:     document.getElementById("f-irrf")?.value || "",
+  };
+
+  persistClients();
+  renderClientList();
+  updateActiveBadge();
+  checkObrig();
+}
+
+/* ============================================================
+   INICIALIZAÇÃO
+============================================================ */
+document.addEventListener("DOMContentLoaded", () => {
+  loadClients();
+  populateCatSelect();
+  activeCPF = _store.getItem(LS_ACTIVE) || null;
+  renderClientList();
+
+  if (activeCPF && clients[activeCPF]) {
+    loadClientIntoUI(activeCPF);
+  } else {
+    showStep0();
+  }
+});
+
+/* ============================================================
+   SIDEBAR / MOBILE
+============================================================ */
+function toggleSidebar() {
+  const sb = document.getElementById("sidebar");
+  const bd = document.getElementById("sidebar-backdrop");
+  const open = sb.classList.contains("mobile-open");
+  if (open) { sb.classList.remove("mobile-open"); bd.classList.remove("visible"); }
+  else       { sb.classList.add("mobile-open");   bd.classList.add("visible"); }
+}
+function closeSidebar() {
+  document.getElementById("sidebar").classList.remove("mobile-open");
+  document.getElementById("sidebar-backdrop").classList.remove("visible");
+}
+
+/* ============================================================
+   CLIENT MANAGEMENT
+============================================================ */
+function renderClientList() {
+  const el       = document.getElementById("client-list");
+  const countEl  = document.getElementById("client-count");
+  const query    = (document.getElementById("client-search")?.value || "").toLowerCase().trim();
+  const allKeys  = Object.keys(clients);
+
+  // Filter by name or CPF
+  const keys = query
+    ? allKeys.filter(cpf => {
+        const c   = clients[cpf];
+        const nom = (c.profile?.nome || "").toLowerCase();
+        const doc = (c.profile?.cpf  || cpf).toLowerCase();
+        return nom.includes(query) || doc.includes(query);
+      })
+    : allKeys;
+
+  // Update counter
+  if (countEl) {
+    countEl.textContent = allKeys.length
+      ? (query ? `${keys.length} de ${allKeys.length}` : `${allKeys.length}`)
+      : "";
+  }
+
+  if (!allKeys.length) {
+    el.innerHTML = `<p class="text-xs text-slate-400 px-2 py-3">Nenhuma declaração ainda.</p>`;
+    return;
+  }
+
+  if (!keys.length) {
+    el.innerHTML = `<p class="text-xs text-slate-400 px-2 py-3 italic">Nenhum resultado para "<strong>${escHtml(query)}</strong>".</p>`;
+    return;
+  }
+
+  el.innerHTML = keys.map(cpf => {
+    const c          = clients[cpf];
+    const nome       = c.profile?.nome || "(sem nome)";
+    const cpfDisplay = c.profile?.cpf  || cpf;
+    const ano        = c.profile?.ano  || "";
+    const itemCount  = (c.items || []).length;
+    const isActive   = cpf === activeCPF;
+
+    // Highlight matched query inside nome/cpf
+    const nomeHl = query ? highlight(nome, query) : escHtml(nome);
+    const cpfHl  = query ? highlight(cpfDisplay, query) : escHtml(cpfDisplay);
+
+    return `
+      <div class="client-row${isActive ? ' active-client' : ''}" onclick="selectClient('${escAttr(cpf)}')">
+        <div class="flex items-center justify-between gap-1 min-w-0">
+          <div class="min-w-0 flex-1">
+            <p class="font-semibold text-sm text-slate-800 truncate leading-tight">${nomeHl}</p>
+            <p class="text-[10px] text-slate-400 leading-tight mt-0.5">
+              ${cpfHl}${ano ? ' · ' + ano : ''}${itemCount ? ` · <span class="text-blue-500 font-semibold">${itemCount} lançamento${itemCount !== 1 ? 's' : ''}</span>` : ''}
+            </p>
+          </div>
+          <button
+            onclick="event.stopPropagation(); deleteClient('${escAttr(cpf)}')"
+            title="Excluir esta declaração"
+            class="icon-btn delete shrink-0">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+      </div>`;
+  }).join("");
+
+  lucide.createIcons();
+}
+
+function selectClient(cpf) {
+  // Save any unsaved edits from the currently active client before switching
+  saveCurrentProfile();
+  _pendingDeleteId = null;
+  activeCPF = cpf;
+  persistActive();
+  loadClientIntoUI(cpf);
+  closeSidebar();
+}
+
+function deleteClient(cpf) {
+  const nome = clients[cpf]?.profile?.nome || cpf;
+  if (!confirm(`Excluir a declaração de "${nome}"? Esta ação não pode ser desfeita.`)) return;
+  delete clients[cpf];
+  persistClients();
+  if (activeCPF === cpf) {
+    activeCPF = null;
+    persistActive();
+    showStep0();
+  }
+  renderClientList();
+  toast("Declaração excluída.");
+}
+
+function loadClientIntoUI(cpf) {
+  const c = clients[cpf];
+  if (!c) return;
+  const p = c.profile || {};
+  // Populate fields
+  setV("f-nome",     p.nome     || "");
+  setV("f-cpf",      p.cpf      || "");
+  setV("f-nasc",     p.nasc     || "");
+  setV("f-ano",      p.ano      || "2025");
+  setV("f-trabalho", p.trabalho || "");
+  const irrfEl = document.getElementById("f-irrf");
+  if (irrfEl) irrfEl.value = p.irrf || "";
+  updateActiveBadge();
+  renderDepList();
+  goStep(1);
+  checkObrig();
+}
+
+function updateActiveBadge() {
+  const c = activeClient();
+  const nome = c?.profile?.nome || "Nenhuma declaração selecionada";
+  document.getElementById("active-client-name").textContent = nome;
+}
+
+function newDeclaration() {
+  activeCPF = null;
+  persistActive();
+  // Clear fields
+  ["f-nome","f-cpf","f-nasc","f-irrf"].forEach(id => { const el=document.getElementById(id); if(el)el.value=""; });
+  setV("f-ano","2025"); setV("f-trabalho","");
+  updateActiveBadge();
+  renderDepList();
+  goStep(1);
+  closeSidebar();
+  toast("Nova declaração iniciada.");
+}
+
+function showStep0() {
+  [0,1,2,3,4].forEach(i => {
+    const s = document.getElementById(`step-${i}`);
+    if (s) { s.classList.add("hidden"); s.classList.remove("fade-in"); }
+  });
+  const s0 = document.getElementById("step-0");
+  if (s0) { s0.classList.remove("hidden"); void s0.offsetWidth; s0.classList.add("fade-in"); }
+  [1,2,3,4].forEach(i => { const p=document.getElementById(`pill-${i}`); if(p) p.className="step-pill inactive"; });
+}
+
+/* ============================================================
+   STEP NAVIGATION
+============================================================ */
+function goStep(n) {
+  // Flush any unsaved profile fields before switching step
+  saveCurrentProfile();
+
+  // If no active client, create stub
+  if (!activeCPF || !clients[activeCPF]) {
+    activeCPF = "__draft_" + Date.now();
+    clients[activeCPF] = {profile:{},dependentes:[],items:[]};
+    persistActive(); persistClients();
+  }
+
+  // Cancel any pending inline delete confirmation
+  _pendingDeleteId = null;
+
+  [0,1,2,3,4].forEach(i => {
+    const s = document.getElementById(`step-${i}`);
+    if (s) { s.classList.add("hidden"); s.classList.remove("fade-in"); }
+  });
+  [1,2,3,4].forEach(i => {
+    const pill = document.getElementById(`pill-${i}`);
+    if (!pill) return;
+    if (i < n)      pill.className="step-pill done";
+    else if (i===n) pill.className="step-pill active";
+    else            pill.className="step-pill inactive";
+  });
+
+  const sec = document.getElementById(`step-${n}`);
+  sec.classList.remove("hidden");
+  void sec.offsetWidth;
+  sec.classList.add("fade-in");
+
+  if (n===2) { renderItems(); updateSummaryBar(); }
+  if (n===3) { calcResumo(); }
+  if (n===4) { setDocType(currentDocType); }
+  lucide.createIcons();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/**
+ * Lê os campos do formulário da Etapa 1 e grava no objeto do cliente ativo.
+ * Chamado antes de qualquer troca de etapa para garantir que nenhum dado
+ * preenchido se perca por não ter disparado o evento `oninput`.
+ */
+function saveCurrentProfile() {
+  const cpfEl   = document.getElementById("f-cpf");
+  const nomeEl  = document.getElementById("f-nome");
+  if (!cpfEl || !nomeEl) return;          // form not in DOM yet
+
+  const cpf  = cpfEl.value.trim();
+  const nome = nomeEl.value.trim();
+  if (!cpf && !nome) return;              // nothing to save
+
+  // Handle CPF key change
+  if (activeCPF && cpf && cpf !== activeCPF && clients[activeCPF]) {
+    const data = clients[activeCPF];
+    delete clients[activeCPF];
+    activeCPF = cpf;
+    clients[activeCPF] = data;
+    persistActive();
+  }
+
+  const key = cpf || activeCPF || ("__nokey_" + Date.now());
+  if (!activeCPF) { activeCPF = key; persistActive(); }
+  if (!clients[activeCPF]) clients[activeCPF] = {profile:{},dependentes:[],items:[]};
+
+  clients[activeCPF].profile = {
+    nome,
+    cpf,
+    nasc:     document.getElementById("f-nasc")?.value    || "",
+    ano:      document.getElementById("f-ano")?.value     || "2025",
+    trabalho: document.getElementById("f-trabalho")?.value || "",
+    irrf:     document.getElementById("f-irrf")?.value    || "",
+  };
+
+  persistClients();
+  renderClientList();
+  updateActiveBadge();
+}
+
+/* ============================================================
+   OBRIGATORIEDADE
+============================================================ */
+function checkObrig() {
+  const c = activeClient();
+  if (!c) return;
+  const totalEnt = totalEntradas(c.items);
+  const tipo = c.profile?.trabalho || "";
+  const limiteObrig = 30639.90;
+  const el = document.getElementById("obrig-box");
+  if (!el) return;
+
+  let msg="", cls="text-slate-500";
+  if (!tipo) {
+    msg="Selecione o tipo de trabalho acima.";
+  } else if (tipo==="rural") {
+    msg="⚠️ Produtor rural tem regras específicas de obrigatoriedade — consulte um contador."; cls="text-amber-700";
+  } else if (totalEnt > limiteObrig) {
+    msg=`✅ Renda total: <strong>${fmtBRL(totalEnt)}</strong>. Acima do limite de R$ ${fmtBRL(limiteObrig)} — <strong>declaração obrigatória</strong>.`; cls="text-green-700";
+  } else if (totalEnt > 0) {
+    msg=`Renda total: <strong>${fmtBRL(totalEnt)}</strong>. Abaixo do limite (R$ ${fmtBRL(limiteObrig)}). Verifique outros critérios de obrigatoriedade com um especialista.`; cls="text-blue-700";
+  } else {
+    msg="Adicione seus rendimentos na <strong>Etapa 2</strong> para verificar a obrigatoriedade.";
+  }
+  el.innerHTML=`<span class="${cls}">${msg}</span>`;
+}
+
+/* ============================================================
+   DEPENDENTES
+============================================================ */
+function renderDepList() {
+  const c = activeClient();
+  const deps = c?.dependentes || [];
+  const el = document.getElementById("dep-list");
+  if (!el) return;
+  if (!deps.length) { el.innerHTML=`<p class="text-sm text-slate-400">Nenhum dependente cadastrado.</p>`; return; }
+  el.innerHTML = deps.map((d,i)=>`
+    <div class="item-row">
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-sm">${d.nome}</p>
+        <p class="text-xs text-slate-400">${relacaoLabel(d.relacao)}${d.cpf?' · '+d.cpf:''}${d.nasc?' · '+fmtDate(d.nasc):''}</p>
+      </div>
+      <button onclick="deleteDep(${i})" class="p-1 text-red-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+    </div>`).join("");
+  lucide.createIcons();
+}
+
+function relacaoLabel(r){return{filho:"Filho(a)",conjuge:"Cônjuge",pai_mae:"Pai/Mãe",outro:"Outro"}[r]||r;}
+
+function openDepModal(){
+  ["dep-nome","dep-cpf","dep-nasc"].forEach(id=>{document.getElementById(id).value="";});
+  document.getElementById("dep-relacao").value="filho";
+  document.getElementById("dep-modal").classList.add("open");
+}
+function closeDepModal(){document.getElementById("dep-modal").classList.remove("open");}
+function closeDepModalBg(e){if(e.target===document.getElementById("dep-modal"))closeDepModal();}
+
+function saveDep(){
+  const nome=document.getElementById("dep-nome").value.trim();
+  if(!nome){toast("Informe o nome do dependente.");return;}
+  ensureClient();
+  clients[activeCPF].dependentes.push({
+    nome,
+    cpf:document.getElementById("dep-cpf").value,
+    nasc:document.getElementById("dep-nasc").value,
+    relacao:document.getElementById("dep-relacao").value
+  });
+  persistClients(); renderDepList(); closeDepModal(); lucide.createIcons(); toast("Dependente adicionado ✓");
+}
+function deleteDep(i){
+  ensureClient();
+  clients[activeCPF].dependentes.splice(i,1);
+  persistClients(); renderDepList(); lucide.createIcons();
+}
+
+/* ============================================================
+   MODAL LANÇAMENTO
+============================================================ */
+function populateCatSelect(){
+  const sel=document.getElementById("m-cat");
+  sel.innerHTML=Object.keys(CAT).map(k=>`<option value="${k}">${k}</option>`).join("");
+  updateSubcat(); updateTip();
+}
+
+function updateSubcat(){
+  const cat=document.getElementById("m-cat").value;
+  const sel=document.getElementById("m-sub");
+  sel.innerHTML=(CAT[cat]?.subs||[]).map(s=>`<option value="${s}">${s}</option>`).join("");
+}
+
+function updateTip(){
+  const cat=document.getElementById("m-cat").value;
+  document.getElementById("m-cat-tip").textContent=CAT[cat]?.tip||"";
+}
+
+function openItemModal(id){
+  editingId=id;
+  document.getElementById("item-modal-title").textContent=id!==null?"Editar lançamento":"Novo lançamento";
+  if(id!==null){
+    const c=activeClient();
+    const item=c?.items?.find(i=>i.id===id);
+    if(!item)return;
+    document.getElementById("m-cat").value=item.cat; updateSubcat(); updateTip();
+    document.getElementById("m-sub").value=item.sub;
+    document.getElementById("m-desc").value=item.desc||"";
+    document.getElementById("m-val").value=item.val||"";
+    document.getElementById("m-mes").value=item.mes||"";
+    document.getElementById("m-pagador").value=item.pagador||"";
+  } else {
+    document.getElementById("m-cat").value=Object.keys(CAT)[0]; updateSubcat(); updateTip();
+    ["m-desc","m-val","m-pagador"].forEach(id=>{document.getElementById(id).value="";});
+    document.getElementById("m-mes").value="";
+  }
+  document.getElementById("item-modal").classList.add("open");
+  lucide.createIcons();
+}
+
+function closeItemModal(){editingId=null;document.getElementById("item-modal").classList.remove("open");}
+function closeItemModalBg(e){if(e.target===document.getElementById("item-modal"))closeItemModal();}
+
+function saveItem(){
+  const cat=document.getElementById("m-cat").value;
+  const sub=document.getElementById("m-sub").value;
+  const val=document.getElementById("m-val").value.trim();
+  if(!val||parseMoney(val)<=0){toast("Informe um valor válido.");return;}
+  ensureClient();
+  const items=clients[activeCPF].items;
+  const entry={
+    cat,sub,
+    desc:document.getElementById("m-desc").value.trim(),
+    val,
+    mes:document.getElementById("m-mes").value,
+    pagador:document.getElementById("m-pagador").value.trim()
+  };
+  if(editingId!==null){
+    const idx=items.findIndex(i=>i.id===editingId);
+    if(idx!==-1) items[idx]={...items[idx],...entry};
+    toast("Lançamento atualizado ✓");
+  } else {
+    items.push({...entry,id:Date.now(),criadoEm:new Date().toISOString()});
+    toast("Lançamento salvo ✓");
+  }
+  persistClients(); closeItemModal(); renderItems(); updateSummaryBar(); checkObrig(); lucide.createIcons();
+}
+
+/* ============================================================
+   MÓDULO "LANÇAMENTO TURBO COM IA GRATUITA"
+   Permite colar um recibo já lido por uma IA externa (foto/PDF)
+   no formato: Categoria | Emissor | CPF/CNPJ | Valor
+============================================================ */
+const TURBO_PROMPT = `Atue como um leitor de OCR fiscal de alta precisão. Analise a imagem ou PDF deste recibo, informe ou nota fiscal que anexei e extraia as informações de forma cirúrgica. Você deve ignorar qualquer texto explicativo e me responder APENAS com uma linha de texto, utilizando a barra vertical (|) como separador. Siga rigorosamente o padrão: Categoria (Escolha entre: Salário, Investimentos, Saúde, Educação, Aluguel ou Outros) | Nome do Emissor | CNPJ ou CPF do Emissor | Valor Total em Reais (Apenas números e vírgula). Exemplo de resposta: Saúde | Clínica Odonto Riso LTDA | 12.345.678/0001-99 | 450,00. Não cumprimente, não explique e não adicione texto antes ou depois.`;
+
+// Mapeia a categoria simplificada que a IA devolve para a categoria interna do app
+const TURBO_CAT_MAP = {
+  "salário":"💰 Salários e Rendimentos",
+  "salario":"💰 Salários e Rendimentos",
+  "investimentos":"💹 Rendimentos Financeiros",
+  "saúde":"🏥 Saúde",
+  "saude":"🏥 Saúde",
+  "educação":"📚 Educação",
+  "educacao":"📚 Educação",
+  "aluguel":"🏠 Aluguel Pago",
+  "outros":"📋 Outras Deduções",
+};
+
+function toggleTurbo(){
+  const body=document.getElementById("turbo-body");
+  const chevron=document.getElementById("turbo-chevron");
+  const isHidden=body.classList.contains("hidden");
+  body.classList.toggle("hidden");
+  chevron.style.transform=isHidden?"rotate(180deg)":"rotate(0deg)";
+}
+
+function copyTurboPrompt(){
+  // Tenta a API moderna; cai para fallback se não disponível (ex: contexto sem HTTPS)
+  const fallbackCopy=()=>{
+    const ta=document.createElement("textarea");
+    ta.value=TURBO_PROMPT;
+    ta.style.position="fixed"; ta.style.opacity="0";
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try{ document.execCommand("copy"); toast("Comando copiado ✓ Cole numa IA junto com a foto do recibo."); }
+    catch(e){ toast("Não foi possível copiar automaticamente. Selecione o texto manualmente."); }
+    document.body.removeChild(ta);
+  };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(TURBO_PROMPT)
+      .then(()=>toast("Comando copiado ✓ Cole numa IA junto com a foto do recibo."))
+      .catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+}
+
+function processTurbo(){
+  const raw=document.getElementById("turbo-input").value.trim();
+  const fb=document.getElementById("turbo-feedback");
+  fb.classList.remove("hidden");
+
+  if(!raw){
+    fb.className="text-sm rounded-lg p-3 bg-red-50 text-red-700";
+    fb.textContent="Cole a resposta da IA antes de processar.";
+    return;
+  }
+
+  const parts=raw.split("|").map(p=>p.trim()).filter(p=>p.length>0);
+
+  if(parts.length<4){
+    fb.className="text-sm rounded-lg p-3 bg-amber-50 text-amber-700";
+    fb.innerHTML="⚠️ A IA não retornou os 4 campos esperados (Categoria | Emissor | CPF/CNPJ | Valor). Abrindo o lançamento manual para você corrigir.";
+    // Abre o modal vazio para correção manual, mesmo com dados parciais
+    openItemModal(null);
+    if(parts[0]) document.getElementById("m-desc").value=parts.slice(1).join(" / ");
+    lucide.createIcons();
+    return;
+  }
+
+  const [catRaw, emissor, doc, valorRaw] = parts;
+  const catKey=catRaw.toLowerCase().trim();
+  const catFinal=TURBO_CAT_MAP[catKey] || "📋 Outras Deduções";
+
+  // Sub mais genérica da categoria como ponto de partida
+  const subFinal=(CAT[catFinal]?.subs||["Outro"])[0];
+
+  ensureClient();
+  const valor=parseMoney(valorRaw);
+
+  clients[activeCPF].items.push({
+    id:Date.now(),
+    cat:catFinal,
+    sub:subFinal,
+    desc:emissor||"",
+    val:valor.toLocaleString("pt-BR",{minimumFractionDigits:2}),
+    mes:"",
+    pagador:doc||"",
+    criadoEm:new Date().toISOString()
+  });
+  persistClients();
+
+  fb.className="text-sm rounded-lg p-3 bg-green-50 text-green-700";
+  fb.innerHTML=`✅ Lançamento criado: <strong>${catFinal}</strong> — ${emissor} — ${fmtBRL(valor)}. Revise e edite se necessário na lista abaixo.`;
+
+  document.getElementById("turbo-input").value="";
+  renderItems(); updateSummaryBar(); checkObrig(); lucide.createIcons();
+  toast("Lançamento Turbo adicionado ✓");
+}
+
+/* ============================================================
+   RENDERIZAÇÃO DE ITENS — STEP 2
+============================================================ */
+function renderCatTabs(){
+  const c=activeClient();
+  const items=c?.items||[];
+  const allCats=["all",...Object.keys(CAT)];
+  document.getElementById("cat-tabs").innerHTML=allCats.map(cat=>{
+    const isAll=cat==="all";
+    const count=isAll?items.length:items.filter(i=>i.cat===cat).length;
+    const active=activeFilter===cat;
+    return `<button onclick="setFilter('${cat}')"
+      class="flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg border transition
+        ${active?'bg-blue-600 text-white border-blue-600':'bg-white text-slate-500 border-slate-200 hover:border-blue-300'}">
+      ${isAll?"Todos":cat}
+      <span class="rounded-full px-1.5 text-[10px] font-bold ${active?'bg-white/20 text-white':'bg-slate-100 text-slate-500'}">${count}</span>
+    </button>`;
+  }).join("");
+}
+
+function setFilter(cat){activeFilter=cat;renderItems();}
+
+/* ── ID do item aguardando confirmação de exclusão ── */
+let _pendingDeleteId = null;
+
+function renderItems(){
+  renderCatTabs();
+  const c=activeClient();
+  const allItems=c?.items||[];
+  const filtered=activeFilter==="all"?allItems:allItems.filter(i=>i.cat===activeFilter);
+  const list=document.getElementById("items-list");
+  const empty=document.getElementById("items-empty");
+
+  if(!filtered.length){
+    list.innerHTML=""; empty.classList.remove("hidden"); return;
+  }
+  empty.classList.add("hidden");
+
+  list.innerHTML=[...filtered].reverse().map(item=>{
+    const catInfo=CAT[item.cat]||{};
+    const tipo=catInfo.tipo||"info";
+    const iconName=catInfo.icon||"circle";
+    const iconBg=tipo==="entrada"?"bg-green-50 text-green-600":
+                  tipo==="deducao"?"bg-red-50 text-red-500":
+                  tipo==="aluguel_pago"?"bg-amber-50 text-amber-600":
+                  "bg-slate-100 text-slate-500";
+    const badge=tipo==="entrada"?"badge badge-green":
+                 tipo==="deducao"?"badge badge-red":
+                 tipo==="aluguel_pago"?"badge badge-yellow":
+                 "badge badge-gray";
+    const aluguelNote=tipo==="aluguel_pago"
+      ?`<span class="text-[10px] text-amber-600 font-medium ml-1">(não deduz)</span>`:""
+    ;
+    const isPending = _pendingDeleteId === item.id;
+
+    return `<div class="item-row fade-in" id="irow-${item.id}">
+      <div class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center ${iconBg}">
+        <i data-lucide="${iconName}" class="w-4 h-4"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-1 flex-wrap">
+          <span class="font-semibold text-sm">${escHtml(item.sub)}</span>${aluguelNote}
+        </div>
+        ${item.desc?`<p class="text-xs text-slate-500 truncate">${escHtml(item.desc)}</p>`:""}
+        <p class="text-[10px] text-slate-400">${escHtml(item.cat)}${item.mes?' · Mês '+item.mes:''}</p>
+      </div>
+      <div class="flex items-center gap-1 shrink-0">
+        <span class="${badge} mr-1">${fmtBRL(parseMoney(item.val))}</span>
+
+        ${isPending ? `
+          <!-- Confirmar exclusão inline -->
+          <span class="text-xs text-red-600 font-semibold mr-1 hidden sm:inline">Excluir?</span>
+          <button onclick="confirmDeleteItem(${item.id})"
+            class="icon-btn danger-active"
+            title="Confirmar exclusão">
+            <i data-lucide="check" class="w-3 h-3"></i> Sim
+          </button>
+          <button onclick="cancelDeleteItem()"
+            class="icon-btn cancel-active"
+            title="Cancelar">
+            <i data-lucide="x" class="w-3 h-3"></i>
+          </button>
+        ` : `
+          <!-- Ações normais -->
+          <button onclick="openItemModal(${item.id})"
+            class="icon-btn edit"
+            title="Editar este lançamento">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button onclick="requestDeleteItem(${item.id})"
+            class="icon-btn delete"
+            title="Excluir este lançamento">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        `}
+      </div>
+    </div>`;
+  }).join("");
+  lucide.createIcons();
+}
+
+/* Exclusão com confirmação inline (sem alert do browser) */
+function requestDeleteItem(id){
+  _pendingDeleteId = id;
+  renderItems();
+}
+function cancelDeleteItem(){
+  _pendingDeleteId = null;
+  renderItems();
+}
+function confirmDeleteItem(id){
+  _pendingDeleteId = null;
+  ensureClient();
+  clients[activeCPF].items = clients[activeCPF].items.filter(i => i.id !== id);
+  persistClients();
+  renderItems();
+  updateSummaryBar();
+  checkObrig();
+  toast("Lançamento removido.");
+}
+/* Mantém deleteItem() para compatibilidade com outras chamadas */
+function deleteItem(id){
+  ensureClient();
+  clients[activeCPF].items=clients[activeCPF].items.filter(i=>i.id!==id);
+  persistClients(); renderItems(); updateSummaryBar(); checkObrig(); toast("Lançamento removido.");
+}
+
+function updateSummaryBar(){
+  const c=activeClient();
+  const items=c?.items||[];
+  const entrada=totalEntradas(items);
+  const deducao=totalDeducoes(items);
+  const aluguel=items.filter(i=>CAT[i.cat]?.tipo==="aluguel_pago").reduce((s,i)=>s+parseMoney(i.val),0);
+  document.getElementById("sb-entrada").textContent=fmtBRL(entrada);
+  document.getElementById("sb-saida").textContent=fmtBRL(deducao);
+  document.getElementById("sb-aluguel").textContent=fmtBRL(aluguel);
+  document.getElementById("sb-count").textContent=items.length;
+}
+
+/* ============================================================
+   CÁLCULO FISCAL — STEP 3
+============================================================ */
+function totalEntradas(items){
+  return items.filter(i=>CAT[i.cat]?.tipo==="entrada").reduce((s,i)=>s+parseMoney(i.val),0);
+}
+
+function totalDeducoes(items){
+  // Aluguel pago NÃO entra. Tipo 'info' NÃO entra. Apenas 'deducao'.
+  return items.filter(i=>CAT[i.cat]?.tipo==="deducao").reduce((s,i)=>s+parseMoney(i.val),0);
+}
+
+function calcIR(baseAnual){
+  if(baseAnual<=0)return 0;
+  const mensal=baseAnual/12;
+  let imp=0;
+  for(const f of FAIXAS_IRPF){
+    if(mensal<=f.ate){imp=mensal*f.aliq-f.ded; break;}
+  }
+  return Math.max(0,imp)*12;
+}
+
+function calcResumo(){
+  const c=activeClient();
+  if(!c){return;}
+  const items=c.items||[];
+  const deps=c.dependentes||[];
+  const numDeps=deps.length;
+  const p=c.profile||{};
+
+  const renda=totalEntradas(items);
+  const deducoesReais=totalDeducoes(items);
+  const deducaoDep=numDeps*DED_DEPENDENTE;
+
+  /* ── Limite de educação ── */
+  // Simplificação: aplica limite só se houver lançamentos de educação
+  const educTotal=items.filter(i=>i.cat==="📚 Educação").reduce((s,i)=>s+parseMoney(i.val),0);
+  const educPessoas=1+numDeps; // contribuinte + dependentes
+  const educLimitado=Math.min(educTotal, LIMITE_EDUC*educPessoas);
+  const deducoesReaisAjustadas=deducoesReais-(educTotal-educLimitado);
+
+  /* ── Simplificado ── */
+  const simpDed=Math.min(renda*SIMP_PCT, LIMIT_SIMP);
+  const simpBase=Math.max(0, renda-simpDed-deducaoDep);
+  const simpImp=calcIR(simpBase);
+
+  /* ── Completo ── */
+  const compDed=deducoesReaisAjustadas;
+  const compBase=Math.max(0, renda-compDed-deducaoDep);
+  const compImp=calcIR(compBase);
+
+  /* ── IRRF ── */
+  const irrf=parseMoney(document.getElementById("f-irrf").value);
+
+  // Persist irrf
+  ensureClient();
+  clients[activeCPF].profile.irrf=document.getElementById("f-irrf").value;
+  persistClients();
+
+  /* ── Best model ── */
+  const melhor=compImp<=simpImp?"Completo":"Simplificado";
+  const melhorImp=Math.min(compImp,simpImp);
+
+  /* ── Saldo ── */
+  let saldo=null;
+  if(irrf>0||melhorImp>0){ saldo=irrf-melhorImp; }
+
+  /* ── Render comparison cards ── */
+  setT("simp-renda",fmtBRL(renda));
+  setT("simp-deducao",fmtBRL(simpDed));
+  setT("simp-dep",fmtBRL(deducaoDep));
+  setT("simp-base",fmtBRL(simpBase));
+  setT("simp-imposto",fmtBRL(simpImp));
+
+  setT("comp-renda",fmtBRL(renda));
+  setT("comp-deducao",fmtBRL(compDed));
+  setT("comp-dep",fmtBRL(deducaoDep));
+  setT("comp-base",fmtBRL(compBase));
+  setT("comp-imposto",fmtBRL(compImp));
+
+  document.getElementById("card-simp").classList.toggle("winner",melhor==="Simplificado");
+  document.getElementById("card-comp").classList.toggle("winner",melhor==="Completo");
+
+  /* ── Melhor modelo badge ── */
+  document.getElementById("melhor-modelo").textContent=melhor;
+
+  /* ── Resultado final (restituição / imposto) ── */
+  const rfEl=document.getElementById("resultado-final");
+  const rlEl=document.getElementById("resultado-label");
+
+  if(saldo!==null){
+    if(saldo>0){
+      rfEl.textContent=`+ ${fmtBRL(saldo)}`;
+      rfEl.className="text-2xl font-extrabold text-green-600";
+      rlEl.textContent="A RESTITUIR 🎉 (estimativa — confirme na Receita Federal)";
+    } else if(saldo<0){
+      rfEl.textContent=`- ${fmtBRL(Math.abs(saldo))}`;
+      rfEl.className="text-2xl font-extrabold text-red-600";
+      rlEl.textContent="A PAGAR (estimativa — confirme na Receita Federal)";
+    } else {
+      rfEl.textContent="R$ 0,00";
+      rfEl.className="text-2xl font-extrabold text-slate-700";
+      rlEl.textContent="Imposto zerado (estimativa)";
+    }
+  } else {
+    rfEl.textContent=fmtBRL(melhorImp);
+    rfEl.className="text-2xl font-extrabold text-slate-800";
+    rlEl.textContent="Imposto devido estimado — informe o IRRF para ver se há restituição";
+  }
+
+  /* ── Recomendação ── */
+  const rec=document.getElementById("recommendation");
+  if(renda>0){
+    const diff=Math.abs(compImp-simpImp);
+    const vantagem=melhor==="Completo"
+      ?`declarar pelo modelo <strong>Completo</strong> economiza ${fmtBRL(diff)} de imposto`
+      :`o <strong>Desconto Simplificado</strong> é mais vantajoso — economiza ${fmtBRL(diff)}`;
+    const icon=melhor==="Completo"?"trophy":"zap";
+    const cor=melhor==="Completo"?"text-green-700 bg-green-100":"text-blue-700 bg-blue-100";
+    rec.innerHTML=`
+      <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cor}">
+        <i data-lucide="${icon}" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <p class="font-bold text-slate-800">Use o modelo <span class="${melhor==='Completo'?'text-green-700':'text-blue-700'}">${melhor}</span></p>
+        <p class="text-sm text-slate-500 mt-1">Neste cenário, ${vantagem}. Esta é uma <em>estimativa</em> baseada nos dados lançados — o valor final pode variar conforme a Receita Federal.</p>
+        ${educTotal>educLimitado?`<p class="text-xs text-amber-600 mt-1">⚠️ Despesas de educação limitadas a R$ ${fmtBRL(LIMITE_EDUC)} por pessoa. R$ ${fmtBRL(educTotal-educLimitado)} não puderam ser deduzidos.</p>`:""}
+      </div>`;
+  } else {
+    rec.innerHTML=`<p class="text-slate-400 text-sm">Adicione seus rendimentos na Etapa 2 para ver a recomendação.</p>`;
+  }
+
+  /* ── Alertas ── */
+  renderAlerts(renda,compDed,irrf,melhorImp,items,deps);
+
+  /* ── Breakdown ── */
+  renderBreakdown(items);
+
+  lucide.createIcons();
+}
+
+function renderAlerts(renda,deducoes,irrf,imposto,items,deps){
+  const box=document.getElementById("alert-box");
+  const alerts=[];
+
+  if(renda===0) alerts.push("⚠️ Nenhuma entrada cadastrada. Adicione seus rendimentos na Etapa 2.");
+  if(deducoes>renda&&renda>0) alerts.push("⚠️ Suas deduções superam a renda total. Revise os valores lançados.");
+  if(deps.length>0&&!items.some(i=>i.cat==="🏥 Saúde"||i.cat==="📚 Educação"||i.cat==="👨‍👩‍👧 Dependentes"))
+    alerts.push("💡 Você tem dependentes — lembre-se de lançar despesas de saúde e educação deles.");
+  if(items.some(i=>i.cat==="🏥 Saúde"&&parseMoney(i.val)>80000))
+    alerts.push("⚠️ Despesa médica muito alta (> R$ 80.000). Confira o valor — a Receita pode pedir comprovação.");
+  if(items.some(i=>i.cat==="🏠 Aluguel Pago"))
+    alerts.push("ℹ️ Você lançou aluguel pago. Esse valor é obrigatório na declaração, mas não gera dedução de imposto.");
+
+  if(alerts.length){
+    box.classList.remove("hidden");
+    box.innerHTML=`<div class="font-semibold text-amber-800 text-sm mb-1 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Atenção</div>
+      <ul class="space-y-1 text-sm text-amber-700">${alerts.map(a=>`<li>${a}</li>`).join("")}</ul>`;
+  } else {
+    box.classList.add("hidden");
+  }
+}
+
+function renderBreakdown(items){
+  const bd=document.getElementById("cat-breakdown");
+  const grupos={};
+  items.forEach(i=>{
+    if(!grupos[i.cat])grupos[i.cat]=0;
+    grupos[i.cat]+=parseMoney(i.val);
+  });
+  if(!Object.keys(grupos).length){
+    bd.innerHTML=`<p class="text-slate-400 text-sm">Nenhum lançamento registrado.</p>`; return;
+  }
+  const sorted=Object.entries(grupos).sort((a,b)=>b[1]-a[1]);
+  const maxV=sorted[0][1];
+  bd.innerHTML=sorted.map(([cat,total])=>{
+    const tipo=CAT[cat]?.tipo||"info";
+    const barColor=tipo==="entrada"?"bg-green-400":tipo==="deducao"?"bg-red-400":tipo==="aluguel_pago"?"bg-amber-400":"bg-slate-300";
+    const badge=tipo==="entrada"?"badge badge-green":tipo==="deducao"?"badge badge-red":tipo==="aluguel_pago"?"badge badge-yellow":"badge badge-gray";
+    const pct=maxV>0?(total/maxV)*100:0;
+    return `<div class="space-y-1">
+      <div class="flex justify-between items-center text-sm">
+        <span class="text-slate-700 font-medium">${cat}</span>
+        <span class="${badge}">${fmtBRL(total)}</span>
+      </div>
+      <div class="prog"><div class="${barColor} h-full rounded-full" style="width:${pct}%"></div></div>
+    </div>`;
+  }).join("");
+}
+
+/* ============================================================
+   EXPORTAR PARA PGD (formato posicional .txt)
+   Layout simulado baseado na estrutura de importação do IRPF/Receita
+   Registro: posição fixa separada por | para clareza
+============================================================ */
+function exportPGD(){
+  const c=activeClient();
+  if(!c){toast("Selecione uma declaração primeiro.");return;}
+  const p=c.profile||{};
+  const items=c.items||[];
+  const deps=c.dependentes||[];
+
+  if(!p.cpf){toast("Informe o CPF do contribuinte antes de exportar.");return;}
+
+  const cpfLimpo=p.cpf.replace(/\D/g,"");
+  const nomePad=(p.nome||"").toUpperCase().padEnd(60).substring(0,60);
+  const ano=p.ano||"2025";
+  const dataGer=new Date().toISOString().slice(0,10);
+  const linhas=[];
+
+  // ── Cabeçalho do arquivo ──
+  linhas.push(`##IRFACIL_EXPORTACAO_PGD`);
+  linhas.push(`##VERSAO:1.0|DATA_GERACAO:${dataGer}|ANO_CALENDARIO:${ano}`);
+  linhas.push(`##AVISO: Este arquivo é uma representação estruturada dos dados para auxílio ao preenchimento do PGDFIRPF. Confira todos os valores no programa oficial da Receita Federal.`);
+  linhas.push(``);
+
+  // ── Registro 00 — Identificação do Contribuinte ──
+  linhas.push(`[REC-00] IDENTIFICACAO_CONTRIBUINTE`);
+  linhas.push(`CPF       : ${p.cpf}`);
+  linhas.push(`NOME      : ${p.nome||""}`);
+  linhas.push(`NASC      : ${p.nasc||""}`);
+  linhas.push(`ANO_CAL   : ${ano}`);
+  linhas.push(`OCUPACAO  : ${p.trabalho||""}`);
+  linhas.push(``);
+
+  // ── Registro 01 — Dependentes ──
+  if(deps.length){
+    linhas.push(`[REC-01] DEPENDENTES`);
+    linhas.push(`SEQ | NOME                                         | CPF             | NASCIMENTO | RELACAO`);
+    linhas.push(`----+----------------------------------------------+-----------------+------------+--------`);
+    deps.forEach((d,i)=>{
+      const seq=String(i+1).padStart(3,"0");
+      const nome=(d.nome||"").padEnd(45).substring(0,45);
+      const cpfD=(d.cpf||"").padEnd(15).substring(0,15);
+      const nasc=(d.nasc||"").padEnd(10).substring(0,10);
+      const rel=(relacaoLabel(d.relacao)||"").padEnd(8).substring(0,8);
+      linhas.push(`${seq} | ${nome} | ${cpfD} | ${nasc} | ${rel}`);
+    });
+    linhas.push(``);
+  }
+
+  // ── Registro 02 — Rendimentos Tributáveis (Ficha 1) ──
+  const entradas=items.filter(i=>CAT[i.cat]?.tipo==="entrada");
+  if(entradas.length){
+    linhas.push(`[REC-02] RENDIMENTOS_TRIBUTAVEIS (Ficha 1 / 2 PGDFIRPF)`);
+    linhas.push(`SEQ | FONTE                                    | PAGADOR                   | MES | VALOR`);
+    linhas.push(`----+------------------------------------------+---------------------------+-----+------------------`);
+    entradas.forEach((item,i)=>{
+      const seq=String(i+1).padStart(3,"0");
+      const fonte=(item.sub||"").padEnd(41).substring(0,41);
+      const pag=(item.pagador||item.desc||"NÃO INFORMADO").padEnd(26).substring(0,26);
+      const mes=(item.mes||"  ").padEnd(3).substring(0,3);
+      const val=fmtBRL(parseMoney(item.val)).padStart(18);
+      linhas.push(`${seq} | ${fonte} | ${pag} | ${mes} | ${val}`);
+    });
+    linhas.push(`   | ${"TOTAL RENDIMENTOS TRIBUTÁVEIS".padEnd(41)} | ${"".padEnd(26)} |     | ${fmtBRL(totalEntradas(items)).padStart(18)}`);
+    linhas.push(``);
+  }
+
+  // ── Registro 03 — Deduções (Ficha de Deduções PGDFIRPF) ──
+  const deducoes=items.filter(i=>CAT[i.cat]?.tipo==="deducao");
+  if(deducoes.length){
+    linhas.push(`[REC-03] DEDUCOES (Ficha de Deduções PGDFIRPF)`);
+    linhas.push(`SEQ | CATEGORIA                          | DESCRICAO                          | MES | VALOR`);
+    linhas.push(`----+------------------------------------+------------------------------------+-----+------------------`);
+    deducoes.forEach((item,i)=>{
+      const seq=String(i+1).padStart(3,"0");
+      const cat=(item.sub||"").padEnd(35).substring(0,35);
+      const desc=(item.desc||item.pagador||"").padEnd(35).substring(0,35);
+      const mes=(item.mes||"  ").padEnd(3).substring(0,3);
+      const val=fmtBRL(parseMoney(item.val)).padStart(18);
+      linhas.push(`${seq} | ${cat} | ${desc} | ${mes} | ${val}`);
+    });
+    linhas.push(`   | ${"TOTAL DEDUCOES".padEnd(35)} | ${"".padEnd(35)} |     | ${fmtBRL(totalDeducoes(items)).padStart(18)}`);
+    linhas.push(``);
+  }
+
+  // ── Registro 04 — Aluguel pago (Informativo) ──
+  const alugueis=items.filter(i=>CAT[i.cat]?.tipo==="aluguel_pago");
+  if(alugueis.length){
+    linhas.push(`[REC-04] ALUGUEL_PAGO (Informativo — NÃO gera dedução — Ficha Pagamentos PGDFIRPF)`);
+    linhas.push(`SEQ | DESCRICAO                                   | PAGADOR                   | MES | VALOR`);
+    linhas.push(`----+---------------------------------------------+---------------------------+-----+------------------`);
+    alugueis.forEach((item,i)=>{
+      const seq=String(i+1).padStart(3,"0");
+      const desc=(item.desc||item.sub||"").padEnd(44).substring(0,44);
+      const pag=(item.pagador||"NÃO INFORMADO").padEnd(26).substring(0,26);
+      const mes=(item.mes||"  ").padEnd(3).substring(0,3);
+      const val=fmtBRL(parseMoney(item.val)).padStart(18);
+      linhas.push(`${seq} | ${desc} | ${pag} | ${mes} | ${val}`);
+    });
+    linhas.push(``);
+  }
+
+  // ── Registro 05 — Bens e Patrimônio ──
+  const bens=items.filter(i=>CAT[i.cat]?.tipo==="info");
+  if(bens.length){
+    linhas.push(`[REC-05] BENS_E_DIREITOS (Ficha Bens e Direitos PGDFIRPF)`);
+    linhas.push(`SEQ | DESCRICAO                                   | MES | VALOR AQUISICAO`);
+    linhas.push(`----+---------------------------------------------+-----+------------------`);
+    bens.forEach((item,i)=>{
+      const seq=String(i+1).padStart(3,"0");
+      const desc=(item.desc||item.sub||"").padEnd(44).substring(0,44);
+      const mes=(item.mes||"  ").padEnd(3).substring(0,3);
+      const val=fmtBRL(parseMoney(item.val)).padStart(18);
+      linhas.push(`${seq} | ${desc} | ${mes} | ${val}`);
+    });
+    linhas.push(``);
+  }
+
+  // ── Registro 06 — IRRF ──
+  const irrf=parseMoney(document.getElementById("f-irrf")?.value||"");
+  linhas.push(`[REC-06] IRRF_RETIDO_NA_FONTE`);
+  linhas.push(`TOTAL_IRRF_RETIDO : ${fmtBRL(irrf)}`);
+  linhas.push(``);
+
+  // ── Registro 07 — Resumo de apuração ──
+  const renda=totalEntradas(items);
+  const ded=totalDeducoes(items);
+  const depDed=(c.dependentes||[]).length*DED_DEPENDENTE;
+  const simpDed=Math.min(renda*SIMP_PCT,LIMIT_SIMP);
+  const simpBase=Math.max(0,renda-simpDed-depDed);
+  const compBase=Math.max(0,renda-ded-depDed);
+  const simpImp=calcIR(simpBase);
+  const compImp=calcIR(compBase);
+  const melhor=compImp<=simpImp?"COMPLETO":"SIMPLIFICADO";
+  const melhorImp=Math.min(simpImp,compImp);
+  const saldo=irrf-melhorImp;
+
+  linhas.push(`[REC-07] RESUMO_APURACAO (Estimativa — confirmar no PGDFIRPF)`);
+  linhas.push(`TOTAL_RENDIMENTOS_TRIBUTAVEIS : ${fmtBRL(renda)}`);
+  linhas.push(`DEDUCOES_REAIS                : ${fmtBRL(ded)}`);
+  linhas.push(`DEDUCAO_SIMPLIFICADA_20PCT    : ${fmtBRL(simpDed)}`);
+  linhas.push(`DEDUCAO_DEPENDENTES           : ${fmtBRL(depDed)}`);
+  linhas.push(`BASE_CALCULO_SIMPLIFICADO     : ${fmtBRL(simpBase)}`);
+  linhas.push(`IMPOSTO_SIMPLIFICADO          : ${fmtBRL(simpImp)}`);
+  linhas.push(`BASE_CALCULO_COMPLETO         : ${fmtBRL(compBase)}`);
+  linhas.push(`IMPOSTO_COMPLETO              : ${fmtBRL(compImp)}`);
+  linhas.push(`MODELO_VANTAJOSO              : ${melhor}`);
+  linhas.push(`IRRF_RETIDO                   : ${fmtBRL(irrf)}`);
+  linhas.push(`SALDO_ESTIMADO                : ${saldo>=0?'RESTITUIR '+fmtBRL(saldo):'PAGAR '+fmtBRL(Math.abs(saldo))}`);
+  linhas.push(``);
+  linhas.push(`##FIM_ARQUIVO`);
+
+  const blob=new Blob([linhas.join("\r\n")],{type:"text/plain;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`IRFACIL_PGD_${cpfLimpo}_${ano}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Arquivo PGD exportado com sucesso ✓");
+}
+
+/* ============================================================
+   EXPORT / IMPORT JSON (backup completo)
+============================================================ */
+function exportJSON(){
+  const data={versao:"2.0",exportadoEm:new Date().toISOString(),clients};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`irfacil-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast("Backup exportado ✓");
+}
+
+function importJSON(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!confirm("Isso vai mesclar os dados do backup com os dados atuais (sem apagar os existentes). Continuar?"))return;
+      // Support v1 (single client) and v2 (multi-client)
+      if(data.clients){
+        Object.assign(clients,data.clients);
+      } else if(data.items||data.profile){
+        // v1 single client
+        const cpf=data.profile?.cpf||"__importado_"+Date.now();
+        clients[cpf]={profile:data.profile||{},dependentes:data.dependentes||[],items:data.items||[]};
+      } else {
+        toast("Formato de arquivo não reconhecido.");return;
+      }
+      persistClients(); renderClientList(); toast("Dados importados com sucesso ✓");
+    }catch(err){toast("Erro ao importar arquivo.");}
+  };
+  reader.readAsText(file);
+  event.target.value="";
+}
+
+function confirmClear(){
+  if(!confirm("Tem certeza? TODOS os dados de TODAS as declarações serão apagados permanentemente. Faça um backup antes!"))return;
+  _store.removeItem(LS_CLIENTS); _store.removeItem(LS_ACTIVE);
+  location.reload();
+}
+
+/* ============================================================
+   UTILITÁRIOS
+============================================================ */
+/* ── String safety & highlight ── */
+function escHtml(str) {
+  return String(str || "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+function escAttr(str) {
+  return String(str || "").replace(/'/g, "&#39;");
+}
+/**
+ * Wraps every occurrence of `query` inside `text` with a <mark> span.
+ * Case-insensitive, XSS-safe.
+ */
+function highlight(text, query) {
+  const safe  = escHtml(text);
+  const safeQ = escHtml(query);
+  if (!safeQ) return safe;
+  const re = new RegExp(`(${safeQ.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`, "gi");
+  return safe.replace(re, `<mark class="bg-yellow-200 text-slate-800 rounded px-0.5">$1</mark>`);
+}
+
+function fmtBRL(v){return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});}
+
+function parseMoney(str){
+  if(!str)return 0;
+  const clean=String(str).replace(/[^\d,\.]/g,"").replace(/\./g,"").replace(",",".");
+  return parseFloat(clean)||0;
+}
+
+function maskMoney(input){
+  let v=input.value.replace(/\D/g,"");
+  if(!v){input.value="";return;}
+  v=(parseInt(v,10)/100).toFixed(2);
+  input.value=parseFloat(v).toLocaleString("pt-BR",{minimumFractionDigits:2});
+}
+
+function maskCPF(input){
+  let v=input.value.replace(/\D/g,"").slice(0,11);
+  if(v.length>9)v=v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/,"$1.$2.$3-$4");
+  else if(v.length>6)v=v.replace(/(\d{3})(\d{3})(\d+)/,"$1.$2.$3");
+  else if(v.length>3)v=v.replace(/(\d{3})(\d+)/,"$1.$2");
+  input.value=v;
+}
+
+function fmtDate(str){if(!str)return"";const[y,m,d]=str.split("-");return`${d}/${m}/${y}`;}
+function setT(id,text){const el=document.getElementById(id);if(el)el.textContent=text;}
+function setV(id,val){const el=document.getElementById(id);if(el)el.value=val;}
+
+function ensureClient(){
+  if(!activeCPF){activeCPF="__draft_"+Date.now();persistActive();}
+  if(!clients[activeCPF])clients[activeCPF]={profile:{},dependentes:[],items:[]};
+}
+
+/* ============================================================
+   MÓDULO "DOCUMENTOS E CONTRATOS"
+   Gera modelos de texto preenchidos com os dados do cliente ativo
+============================================================ */
+let currentDocType = "contrato";
+
+function setDocType(type){
+  currentDocType = type;
+  ["contrato","recibo","responsabilidade"].forEach(t=>{
+    const btn=document.getElementById(`doctab-${t}`);
+    if(btn) btn.classList.toggle("active", t===type);
+  });
+  const ta=document.getElementById("doc-textarea");
+  if(ta) ta.value = buildDocText(type);
+}
+
+function buildDocText(type){
+  const c=activeClient();
+  const p=c?.profile||{};
+  const nome=p.nome||"[NOME DO CLIENTE NÃO INFORMADO]";
+  const cpf=p.cpf||"[CPF NÃO INFORMADO]";
+  const ano=p.ano||"[ANO]";
+  const hoje=new Date();
+  const dataExtenso=hoje.toLocaleDateString("pt-BR",{day:"2-digit",month:"long",year:"numeric"});
+  const items=c?.items||[];
+
+  if(type==="contrato"){
+    return `CONTRATO DE PRESTAÇÃO DE SERVIÇOS CONTÁBEIS
+(Elaboração e Entrega da Declaração de Imposto de Renda Pessoa Física)
+
+CONTRATANTE: ${nome}
+CPF: ${cpf}
+
+CONTRATADO(A): [NOME DO(A) CONTADOR(A) / ESCRITÓRIO]
+CPF/CNPJ: [INFORMAR]
+Registro CRC: [INFORMAR]
+
+As partes acima identificadas têm, entre si, justo e acertado o presente
+Contrato de Prestação de Serviços Contábeis, referente ao Ano-Calendário
+${ano}, que se regerá pelas cláusulas seguintes:
+
+CLÁUSULA 1ª — DO OBJETO
+O presente contrato tem como objeto a prestação de serviços de análise,
+organização, apuração e transmissão da Declaração de Ajuste Anual do
+Imposto de Renda Pessoa Física (DIRPF) do(a) CONTRATANTE junto à
+Secretaria Especial da Receita Federal do Brasil, referente ao
+exercício ${ano}.
+
+CLÁUSULA 2ª — DAS OBRIGAÇÕES DO CONTRATADO
+O(A) CONTRATADO(A) se compromete a:
+  a) Analisar a documentação fiscal fornecida pelo(a) CONTRATANTE;
+  b) Apurar corretamente rendimentos, deduções e bens declaráveis;
+  c) Transmitir a declaração dentro do prazo legal estabelecido pela
+     Receita Federal;
+  d) Manter sigilo sobre todas as informações financeiras recebidas.
+
+CLÁUSULA 3ª — DAS OBRIGAÇÕES DO CONTRATANTE
+O(A) CONTRATANTE se compromete a:
+  a) Fornecer, com veracidade e dentro do prazo solicitado, todos os
+     documentos, informes de rendimentos, recibos e comprovantes
+     necessários à correta apuração do imposto;
+  b) Responder pela autenticidade dos documentos entregues, conforme
+     Declaração de Responsabilidade firmada em separado;
+  c) Efetuar o pagamento dos honorários conforme Cláusula 4ª.
+
+CLÁUSULA 4ª — DOS HONORÁRIOS
+Pela prestação dos serviços descritos neste contrato, o(a)
+CONTRATANTE pagará ao(à) CONTRATADO(A) o valor de
+R$ [VALOR DOS HONORÁRIOS], a ser quitado da seguinte forma:
+[FORMA DE PAGAMENTO — à vista / parcelado].
+
+CLÁUSULA 5ª — DA VIGÊNCIA
+O presente contrato vigora a partir da data de assinatura até a
+efetiva transmissão da declaração e eventual retificação, se
+necessária, dentro do mesmo exercício fiscal.
+
+CLÁUSULA 6ª — DO FORO
+Fica eleito o foro da comarca de [CIDADE/UF] para dirimir quaisquer
+dúvidas oriundas deste contrato.
+
+E por estarem assim justas e contratadas, as partes assinam o
+presente instrumento em 02 (duas) vias de igual teor.
+
+[CIDADE], ${dataExtenso}.
+
+
+_________________________________________
+${nome}
+CONTRATANTE — CPF: ${cpf}
+
+
+_________________________________________
+[NOME DO(A) CONTADOR(A) / ESCRITÓRIO]
+CONTRATADO(A)`;
+  }
+
+  if(type==="recibo"){
+    const listaItens = items.length
+      ? items.map((it,i)=>`  ${String(i+1).padStart(2,"0")}. ${it.cat} — ${it.sub}${it.desc?' ('+it.desc+')':''}`).join("\n")
+      : "  Nenhum lançamento registrado no sistema até o momento da emissão.";
+
+    return `RECIBO DE ENTREGA DE DOCUMENTOS
+(Comprovante de recebimento de documentação para fins de IRPF)
+
+Eu, [NOME DO(A) CONTADOR(A) / ESCRITÓRIO], declaro ter recebido,
+nesta data, do(a) Sr(a). ${nome}, portador(a) do CPF ${cpf},
+os seguintes documentos destinados à elaboração de sua Declaração
+de Imposto de Renda Pessoa Física referente ao ano-calendário ${ano}:
+
+DOCUMENTOS / LANÇAMENTOS INFORMADOS PELO CLIENTE:
+${listaItens}
+
+Total de itens recebidos/lançados: ${items.length}
+
+Declaro que os documentos acima foram recebidos para fins exclusivos
+de apuração e transmissão da declaração de imposto de renda, não se
+responsabilizando este(a) profissional pela autenticidade do
+conteúdo, conforme Declaração de Responsabilidade de Dados firmada
+separadamente pelo(a) CONTRATANTE.
+
+[CIDADE], ${dataExtenso}.
+
+
+_________________________________________
+[NOME DO(A) CONTADOR(A) / ESCRITÓRIO]
+RECEBEDOR(A)
+
+
+_________________________________________
+${nome}
+ENTREGUE POR — CPF: ${cpf}`;
+  }
+
+  if(type==="responsabilidade"){
+    return `DECLARAÇÃO DE RESPONSABILIDADE SOBRE A VERACIDADE DOS DADOS
+(Para fins de elaboração da Declaração de Imposto de Renda Pessoa Física)
+
+Eu, ${nome}, portador(a) do CPF nº ${cpf}, declaro, para os devidos
+fins, que todos os documentos, recibos, informes de rendimentos,
+comprovantes de despesas médicas, educacionais e demais documentos
+fiscais entregues a [NOME DO(A) CONTADOR(A) / ESCRITÓRIO] para a
+elaboração da minha Declaração de Imposto de Renda Pessoa Física,
+referente ao ano-calendário ${ano}, são autênticos, verídicos e de
+minha inteira responsabilidade.
+
+Declaro estar ciente de que:
+
+  1) A responsabilidade pela veracidade das informações prestadas é
+     exclusivamente do(a) declarante, nos termos da legislação
+     tributária vigente;
+
+  2) O(A) profissional contábil contratado(a) atua com base nos
+     documentos e informações que lhe foram fornecidos, não tendo
+     meios de verificar a autenticidade de cada comprovante
+     apresentado;
+
+  3) Qualquer inconsistência, omissão ou inexatidão nos documentos
+     fornecidos é de minha exclusiva responsabilidade, isentando o(a)
+     profissional contábil de quaisquer penalidades, multas ou
+     consequências fiscais delas decorrentes;
+
+  4) Comprometo-me a guardar os documentos originais pelo prazo
+     mínimo de 5 (cinco) anos, conforme exigido pela Receita Federal
+     do Brasil, para eventual comprovação em caso de fiscalização.
+
+Por ser verdade, firmo a presente declaração.
+
+[CIDADE], ${dataExtenso}.
+
+
+_________________________________________
+${nome}
+CPF: ${cpf}`;
+  }
+
+  return "";
+}
+
+function printDocument(){
+  const ta=document.getElementById("doc-textarea");
+  const printArea=document.getElementById("print-area");
+  if(!ta||!printArea){toast("Não foi possível preparar a impressão.");return;}
+  // Escapa HTML básico e preserva quebras de linha
+  const safe=ta.value
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  printArea.innerHTML = safe;
+  window.print();
+}
+
+/* ── Toast ── */
+let _toastTimer;
+function toast(msg){
+  const el=document.getElementById("toast");
+  el.textContent=msg; el.classList.add("show");
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>el.classList.remove("show"),3200);
+}
+</script>
+
+<!-- Lucide Icons — carregado por último, antes do </body> -->
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" onload="lucide.createIcons()"></script>
+</body>
+</html>
